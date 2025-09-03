@@ -1,0 +1,18 @@
+{
+  "name": "workloadorchestration-example",
+  "version": "1.0.0",
+  "description": "Example implementation of Azure WorkloadOrchestration SDK",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@azure/arm-workloadorchestration": "1.0.0-beta.1",
+    "@azure/identity": "^3.3.0"
+  }
+}

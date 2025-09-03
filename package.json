@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "@azure/arm-workloadorchestration": "^1.0.0-alpha.20250901.1",
+    "@azure/core-client": "^1.10.0",
+    "@azure/core-rest-pipeline": "^1.22.0",
+    "@azure/identity": "^4.11.1"
+  },
+  "name": "sdktester",
+  "version": "1.0.0",
+  "description": "This repository contains implementations of the Azure Workload Orchestration SDK in multiple programming languages, providing a consistent interface for managing Azure workload orchestration resources across different technology stacks.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atharvau/Azure-Workload-Orchestration-SDK-Example.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/atharvau/Azure-Workload-Orchestration-SDK-Example/issues"
+  },
+  "homepage": "https://github.com/atharvau/Azure-Workload-Orchestration-SDK-Example#readme"
+}
