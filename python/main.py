@@ -1,12 +1,73 @@
 import os
-from azure.identity import DefaultAzureCredential
+import random
+import time
+import json
+from datetime import datetime
+from azure.identity import DefaultAzureCredential, EnvironmentCredential
 from azure.mgmt.workloadorchestration import WorkloadOrchestrationMgmtClient
 from azure.core.exceptions import HttpResponseError
 
+def retry_operation(operation, max_attempts=3, delay_seconds=30):
+    """
+    Retry an operation with exponential backoff
+    """
+    for attempt in range(max_attempts):
+        try:
+            return operation()
+        except Exception as e:
+            if attempt == max_attempts - 1:  # Last attempt
+                raise  # Re-raise the last exception
+            print(f"Attempt {attempt + 1} failed: {str(e)}")
+            print(f"Waiting {delay_seconds} seconds before retrying...")
+            time.sleep(delay_seconds)
+            delay_seconds *= 2  # Exponential backoff
+
 # Configuration
 LOCATION = "eastus2euap"
-SUBSCRIPTION_ID = "973d15c6-6c57-447e-b9c6-6d79b5b784ab"
-RESOURCE_GROUP = "ConfigManager-CloudTest-Playground-Portal"
+SUBSCRIPTION_ID = os.getenv("AZURE_SUBSCRIPTION_ID", "973d15c6-6c57-447e-b9c6-6d79b5b784ab")
+RESOURCE_GROUP = "sdkexamples"
+CONTEXT_RESOURCE_GROUP = "Mehoopany"  # Hardcoded resource group for context
+CONTEXT_NAME = "Mehoopany-Context"    # Hardcoded context name
+
+# Single capability configuration - ensures consistency across all resources
+SINGLE_CAPABILITY_NAME = "sdkexamples-soap"
+
+# Authentication setup hints
+AUTH_SETUP_HINT = """
+Please set up authentication by either:
+1. Setting environment variables:
+   - AZURE_CLIENT_ID
+   - AZURE_TENANT_ID
+   - AZURE_CLIENT_SECRET
+   Visit: https://docs.microsoft.com/azure/active-directory/develop/howto-create-service-principal-portal
+
+2. Using Azure CLI:
+   Run: az login
+
+3. Using Azure PowerShell:
+   Run: Connect-AzAccount
+"""
+
+def generate_random_semantic_version(include_prerelease=False, include_build=False):
+    """
+    Generate a random semantic version string
+    """
+    major = random.randint(0, 10)
+    minor = random.randint(0, 20)
+    patch = random.randint(0, 100)
+    version = f"{major}.{minor}.{patch}"
+    
+    if include_prerelease:
+        prerelease_types = ['alpha', 'beta', 'rc']
+        prerelease_type = random.choice(prerelease_types)
+        prerelease_num = random.randint(1, 10)
+        version += f"-{prerelease_type}.{prerelease_num}"
+    
+    if include_build:
+        build_num = random.randint(1, 10000)
+        version += f"+{build_num}"
+    
+    return version
 
 def get_next_version():
     try:
@@ -22,8 +83,8 @@ def get_next_version():
 
 def create_schema(client, resource_group_name, subscription_id):
     try:
-        version = get_next_version()
-        schema_name = f"test-schema-v{version}"
+        version = generate_random_semantic_version()
+        schema_name = f"sdkexamples-schema-v{version}"
         
         schema_result = client.schemas.begin_create_or_update(
             resource_group_name=resource_group_name,
@@ -40,15 +101,41 @@ def create_schema(client, resource_group_name, subscription_id):
 
 def create_schema_version(client, resource_group_name, schema_name):
     try:
-        version = get_next_version()
-        schema_version_name = f"1.0.{version}"
+        # Use semantic versioning
+        version = generate_random_semantic_version()
+        schema_version_name = version
         schema_version_result = client.schema_versions.begin_create_or_update(
             resource_group_name=resource_group_name,
             schema_name=schema_name,
             schema_version_name=schema_version_name,
             resource={
                 "properties": {
-                    "value": "rules:\n  configs:\n      ErrorThreshold:\n        type: float\n        required: true\n  "
+                    "value": """rules:
+  configs:
+    ErrorThreshold:
+      type: float
+      required: true
+    AppName:
+      type: string
+      required: true
+    TemperatureRangeMax:
+      type: int
+      required: true
+    HealthCheckEndpoint:
+      type: string
+      required: true
+    EnableLocalLog:
+      type: boolean
+      required: true
+    AgentEndpoint:
+      type: string
+      required: true
+    HealthCheckEnabled:
+      type: boolean
+      required: true
+    ApplicationEndpoint:
+      type: string
+      required: true"""
                 }
             }
         ).result()
@@ -57,18 +144,20 @@ def create_schema_version(client, resource_group_name, schema_name):
         print(f"Error creating schema version: {e}")
         raise
 
-def create_solution_template(client, resource_group_name):
+def create_solution_template(client, resource_group_name, capabilities=None):
     try:
-        version = get_next_version()
-        solution_template_name = f"my-solution-template-v{version}"
+        if capabilities is None:
+            capabilities = [SINGLE_CAPABILITY_NAME]
+        
+        solution_template_name = "sdkexamples-solution"
         solution_template_result = client.solution_templates.begin_create_or_update(
             resource_group_name=resource_group_name,
             solution_template_name=solution_template_name,
             resource={
                 "location": LOCATION,
                 "properties": {
-                    "capabilities": ["sdkbox-soap"],
-                    "description": "This is Test Solution"
+                    "capabilities": capabilities,
+                    "description": "This is Holtmelt Solution with random capabilities"
                 }
             }
         ).result()
@@ -79,9 +168,22 @@ def create_solution_template(client, resource_group_name):
 
 def create_solution_template_version(client, resource_group_name, solution_template_name, schema_name, schema_version):
     try:
-        version = get_next_version()
-        solution_template_version_name = f"1.0.{version}"
-        configurations_str = f"schema:\n  name: {schema_name}\n  version: {schema_version}\nconfigs:\n  AppName: Hotmelt\n  TemperatureRangeMax: ${{$val(TemperatureRangeMax)}}\n  ErrorThreshold: ${{$val(ErrorThreshold)}}\n  HealthCheckEndpoint: ${{$val(HealthCheckEndpoint)}}\n  EnableLocalLog: ${{$val(EnableLocalLog)}}\n  AgentEndpoint: ${{$val(AgentEndpoint)}}\n  HealthCheckEnabled: ${{$val(HealthCheckEnabled)}}\n  ApplicationEndpoint: ${{$val(ApplicationEndpoint)}}\n"
+        # Generate a clean version number without pre-release or build info
+        version = generate_random_semantic_version(include_prerelease=False, include_build=False)
+        solution_template_version_name = version
+        configurations_str = f"""schema:
+  name: {schema_name}
+  version: {schema_version}
+configs:
+  AppName: "Hotmelt"
+  TemperatureRangeMax: 100
+  ErrorThreshold: 0.5
+  HealthCheckEndpoint: "http://localhost:8080/health"
+  EnableLocalLog: true
+  AgentEndpoint: "http://localhost:8080/agent"
+  HealthCheckEnabled: true
+  ApplicationEndpoint: "http://localhost:8080/app"
+"""
         solution_template_version_result = client.solution_templates.begin_create_version(
             resource_group_name=resource_group_name,
             solution_template_name=solution_template_name,
@@ -116,9 +218,13 @@ def create_solution_template_version(client, resource_group_name, solution_templ
         print(f"Error creating solution template version: {e}")
         raise
 
-def create_target(client, resource_group_name):
-    try:
-        target_name = "sdkbox-mk71"
+def create_target(client, resource_group_name, capabilities=None):
+    # Process capabilities at the function level to avoid scoping issues
+    if capabilities is None:
+        capabilities = [SINGLE_CAPABILITY_NAME]
+    
+    def create_operation():
+        target_name = "sdkbox-mk799"
         target_result = client.targets.begin_create_or_update(
             resource_group_name=resource_group_name,
             target_name=target_name,
@@ -129,11 +235,11 @@ def create_target(client, resource_group_name):
                 },
                 "location": LOCATION,
                 "properties": {
-                    "capabilities": ["sdkbox-soap"],
-                    "contextId": "/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/Mehoopany/providers/Microsoft.Edge/contexts/Mehoopany-Context",
-                    "description": "This is MK-71 Site",
+                    "capabilities": capabilities,
+                    "contextId": f"/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/{CONTEXT_RESOURCE_GROUP}/providers/Microsoft.Edge/contexts/{CONTEXT_NAME}",
+                    "description": "This is MK-71 Site with random capabilities",
                     "displayName": "sdkbox-mk71",
-                    "hierarchyLevel": "site",
+                    "hierarchyLevel": "line",
                     "solutionScope": "new",
                     "targetSpecification": {
                         "topologies": [
@@ -154,8 +260,360 @@ def create_target(client, resource_group_name):
             }
         ).result()
         return target_result
+
+    try:
+        return retry_operation(create_operation)
     except Exception as e:
         print(f"Error creating target: {e}")
+        raise
+
+def review_target(client, resource_group_name, target_name, solution_template_version_id):
+    """
+    Review a target deployment using a solution template version
+    """
+    def review_operation():
+        print(f"Starting review for target {target_name}")
+        review_result = client.targets.begin_review_solution_version(
+            resource_group_name=resource_group_name,
+            target_name=target_name,
+            body={
+                "solutionDependencies": [],
+                "solutionInstanceName": target_name,
+                "solutionTemplateVersionId": solution_template_version_id
+            }
+        ).result()
+        return review_result
+
+    try:
+        review_result = retry_operation(review_operation)
+        print(review_result)
+
+        # Handle response that might be wrapped in _data
+        if hasattr(review_result, '_data'):
+            response_dict = review_result._data
+        elif hasattr(review_result, '__dict__'):
+            response_dict = review_result.__dict__
+        else:
+            response_dict = dict(review_result)
+
+        # Extract solutionTemplateVersionId from the nested structure
+        try:
+            if '_data' in response_dict:
+                response_dict = response_dict['_data']
+            
+            properties = response_dict.get('properties', {})
+            version_id = properties.get('id')
+            
+            if version_id:
+                print(f"Found solution version ID: {version_id}")
+                return version_id
+            
+            # Debug output for troubleshooting
+            print("Debug - Full response:", response_dict)
+            print("Debug - Properties:", properties)
+            print("Debug - Nested properties:", nested_props)
+            raise ValueError("Could not find solutionTemplateVersionId in review response")
+        except Exception as e:
+            print(f"Debug - Error: {str(e)}")
+            raise ValueError(f"Error extracting solutionTemplateVersionId: {str(e)}")
+    except Exception as e:
+        print(f"Error reviewing target: {e}")
+        raise
+
+def publish_target(client, resource_group_name, target_name, solution_version_id):
+    """
+    Publish a solution version to a target
+    """
+    def publish_operation():
+        print(f"Publishing solution version to target {target_name}")
+        publish_result = client.targets.begin_publish_solution_version(
+            resource_group_name=resource_group_name,
+            target_name=target_name,
+            body={
+                "solutionVersionId": solution_version_id
+            }
+        ).result()
+        print("Publish operation completed successfully")
+        return publish_result
+
+    try:
+        return retry_operation(publish_operation)
+    except Exception as e:
+        print(f"Error publishing to target: {e}")
+        raise
+
+def install_target(client, resource_group_name, target_name, solution_version_id):
+    """
+    Install a published solution version on a target
+    """
+    def install_operation():
+        print(f"Installing solution version on target {target_name}")
+        install_result = client.targets.begin_install_solution(
+            resource_group_name=resource_group_name,
+            target_name=target_name,
+            body={
+                "solutionVersionId": solution_version_id
+            }
+        ).result()
+        
+        # Store the install job ID from the response
+        install_job_id = install_result.job_id if hasattr(install_result, 'job_id') else None
+        print(f"Install operation completed. Job ID: {install_job_id}")
+        return install_result
+
+    try:
+        return retry_operation(install_operation)
+    except Exception as e:
+        print(f"Error installing on target: {e}")
+        raise
+
+def get_existing_context(client, resource_group_name, context_name):
+    """
+    Fetch existing Azure context and return its capabilities
+    """
+    try:
+        print(f"DEBUG: Fetching existing context: {context_name}")
+        context = client.contexts.get(
+            resource_group_name=resource_group_name,
+            context_name=context_name
+        )
+        
+        existing_capabilities = []
+        if hasattr(context, 'properties') and hasattr(context.properties, 'capabilities'):
+            existing_capabilities = context.properties.capabilities
+        
+        print(f"DEBUG: Found {len(existing_capabilities)} existing capabilities")
+        if existing_capabilities:
+            print("DEBUG: Existing capabilities details:")
+            for i, cap in enumerate(existing_capabilities):
+                print(f"  [{i}] Type: {type(cap)}")
+                if isinstance(cap, dict):
+                    print(f"      Name: {cap.get('name', 'N/A')}")
+                    print(f"      Description: {cap.get('description', 'N/A')}")
+                    print(f"      State: {cap.get('state', 'N/A')}")
+                else:
+                    print(f"      Name: {getattr(cap, 'name', 'N/A')}")
+                    print(f"      Description: {getattr(cap, 'description', 'N/A')}")
+                    print(f"      State: {getattr(cap, 'state', 'N/A')}")
+        
+        return existing_capabilities
+        
+    except HttpResponseError as e:
+        if e.status_code == 404:
+            print("DEBUG: Context not found, will create new one")
+            return []
+        else:
+            print(f"DEBUG: Error fetching context: {e}")
+            raise
+    except Exception as e:
+        print(f"DEBUG: Error fetching context: {e}")
+        return []
+
+def generate_single_random_capability():
+    """
+    Generate a single random Shampoo or Soap capability
+    """
+    capability_types = ["shampoo", "soap"]
+    cap_type = random.choice(capability_types)
+    random_suffix = random.randint(1000, 9999)
+    
+    capability = {
+        "name": f"sdkexamples-{cap_type}-{random_suffix}",
+        "description": f"SDK generated {cap_type} manufacturing capability"
+    }
+    
+    print(f"DEBUG: Generated single random capability: {capability['name']}")
+    return capability
+
+def merge_capabilities_with_uniqueness(existing_capabilities, new_capabilities):
+    """
+    Merge capabilities ensuring no duplicates by name with comprehensive debugging
+    """
+    print("=" * 60)
+    print("DEBUGGING CAPABILITY MERGE PROCESS")
+    print("=" * 60)
+    
+    # Debug: Show what's coming in
+    print(f"DEBUG: EXISTING CAPABILITIES - Count: {len(existing_capabilities)}")
+    if existing_capabilities:
+        for i, cap in enumerate(existing_capabilities):
+            print(f"  EXISTING[{i}]:")
+            print(f"    Type: {type(cap)}")
+            if isinstance(cap, dict):
+                print(f"    Name: {cap.get('name', 'N/A')}")
+                print(f"    Description: {cap.get('description', 'N/A')}")
+                print(f"    Has State: {'state' in cap}")
+            else:
+                print(f"    Name: {getattr(cap, 'name', 'N/A')}")
+                print(f"    Description: {getattr(cap, 'description', 'N/A')}")
+                print(f"    Has State: {hasattr(cap, 'state')}")
+    
+    print(f"\nDEBUG: NEW CAPABILITIES - Count: {len(new_capabilities)}")
+    if new_capabilities:
+        for i, cap in enumerate(new_capabilities):
+            print(f"  NEW[{i}]:")
+            print(f"    Type: {type(cap)}")
+            if isinstance(cap, dict):
+                print(f"    Name: {cap.get('name', 'N/A')}")
+                print(f"    Description: {cap.get('description', 'N/A')}")
+                print(f"    Has State: {'state' in cap}")
+            else:
+                print(f"    Name: {getattr(cap, 'name', 'N/A')}")
+                print(f"    Description: {getattr(cap, 'description', 'N/A')}")
+                print(f"    Has State: {hasattr(cap, 'state')}")
+    
+    # Process existing capabilities
+    existing_names = set()
+    merged_capabilities = []
+    
+    print(f"\nDEBUG: PROCESSING EXISTING CAPABILITIES...")
+    for i, cap in enumerate(existing_capabilities):
+        if isinstance(cap, dict):
+            cap_name = cap.get('name', '')
+            cap_desc = cap.get('description', '')
+        else:
+            cap_name = getattr(cap, 'name', '')
+            cap_desc = getattr(cap, 'description', '')
+        
+        if cap_name and cap_name not in existing_names:
+            existing_names.add(cap_name)
+            # Convert to dict format without state field
+            capability_dict = {
+                "name": cap_name,
+                "description": cap_desc
+            }
+            merged_capabilities.append(capability_dict)
+            print(f"  ADDED EXISTING[{i}]: {cap_name}")
+        else:
+            print(f"  SKIPPED EXISTING[{i}]: {cap_name} (duplicate or empty)")
+    
+    print(f"\nDEBUG: PROCESSING NEW CAPABILITIES...")
+    # Process new capabilities
+    for i, cap in enumerate(new_capabilities):
+        cap_name = cap.get('name', '') if isinstance(cap, dict) else getattr(cap, 'name', '')
+        
+        if cap_name not in existing_names:
+            existing_names.add(cap_name)
+            # Ensure new capabilities don't have state field
+            capability_dict = {
+                "name": cap.get('name', '') if isinstance(cap, dict) else getattr(cap, 'name', ''),
+                "description": cap.get('description', '') if isinstance(cap, dict) else getattr(cap, 'description', '')
+            }
+            merged_capabilities.append(capability_dict)
+            print(f"  ADDED NEW[{i}]: {cap_name}")
+        else:
+            print(f"  REJECTED NEW[{i}]: {cap_name} (DUPLICATE - overriding avoided!)")
+    
+    print(f"\nDEBUG: MERGE RESULTS VALIDATION")
+    print(f"  Initial existing count: {len(existing_capabilities)}")
+    print(f"  New capabilities count: {len(new_capabilities)}")
+    print(f"  Final merged count: {len(merged_capabilities)}")
+    print(f"  Unique names count: {len(existing_names)}")
+    
+    # Validation check
+    expected_max = len(existing_capabilities) + len(new_capabilities)
+    if len(merged_capabilities) > expected_max:
+        print(f"ERROR: Merged count ({len(merged_capabilities)}) exceeds maximum expected ({expected_max})")
+        print("STOPPING EXECUTION - CAPABILITY MERGE VALIDATION FAILED")
+        raise ValueError(f"Capability merge validation failed: count {len(merged_capabilities)} > {expected_max}")
+    
+    # Final validation: ensure all merged capabilities have required fields
+    print(f"\nDEBUG: FINAL CAPABILITY VALIDATION")
+    for i, cap in enumerate(merged_capabilities):
+        if not isinstance(cap, dict):
+            print(f"ERROR: Capability[{i}] is not dict: {type(cap)}")
+            raise ValueError(f"Invalid capability format at index {i}")
+        if not cap.get('name'):
+            print(f"ERROR: Capability[{i}] missing name: {cap}")
+            raise ValueError(f"Capability missing name at index {i}")
+        if 'state' in cap:
+            print(f"WARNING: Capability[{i}] contains deprecated 'state' field: {cap['name']}")
+    
+    print(f"VALIDATION PASSED - Proceeding with {len(merged_capabilities)} capabilities")
+    print("=" * 60)
+    
+    return merged_capabilities
+
+def save_capabilities_to_json(capabilities, filename="context-capabilities.json"):
+    """
+    Save capabilities to JSON file
+    """
+    try:
+        with open(filename, 'w') as f:
+            json.dump(capabilities, f, indent=2)
+        print(f"Capabilities saved to {filename}")
+    except Exception as e:
+        print(f"Error saving capabilities to JSON: {e}")
+        raise
+
+def create_or_update_context_with_hierarchies(client, resource_group_name, context_name, capabilities):
+    """
+    Create or update Azure context with capabilities and hierarchies
+    """
+    def context_operation():
+        hierarchies = [
+            {"name": "country", "description": "Country level hierarchy"},
+            {"name": "region", "description": "Regional level hierarchy"}, 
+            {"name": "factory", "description": "Factory level hierarchy"},
+            {"name": "line", "description": "Production line hierarchy"}
+        ]
+        
+        resource = {
+            "location": LOCATION,
+            "properties": {
+                "capabilities": capabilities,
+                "hierarchies": hierarchies
+            }
+        }
+        
+        print(f"Creating/updating context: {context_name}")
+        context_result = client.contexts.begin_create_or_update(
+            resource_group_name=resource_group_name,
+            context_name=context_name,
+            resource=resource
+        ).result()
+        
+        return context_result
+    
+    try:
+        return retry_operation(context_operation)
+    except Exception as e:
+        print(f"Error creating/updating context: {e}")
+        raise
+
+def manage_azure_context(client, resource_group_name=CONTEXT_RESOURCE_GROUP, context_name=CONTEXT_NAME):
+    """
+    Complete context management workflow:
+    1. Fetch existing context
+    2. Generate single random capability
+    3. Merge with uniqueness
+    4. Save to JSON
+    5. Update context
+    """
+    try:
+        # Step 1: Fetch existing context
+        existing_capabilities = get_existing_context(client, resource_group_name, context_name)
+        
+        # Step 2: Generate single random capability  
+        new_capability = generate_single_random_capability()
+        new_capabilities = [new_capability]  # Convert to list for merge function
+        
+        # Step 3: Merge capabilities with uniqueness constraints
+        merged_capabilities = merge_capabilities_with_uniqueness(existing_capabilities, new_capabilities)
+        
+        # Step 4: Save to JSON file
+        save_capabilities_to_json(merged_capabilities)
+        
+        # Step 5: Create/update context with hierarchies
+        context_result = create_or_update_context_with_hierarchies(
+            client, resource_group_name, context_name, merged_capabilities
+        )
+        
+        print(f"Context management completed successfully: {context_result.name}")
+        return context_result
+        
+    except Exception as e:
+        print(f"Error in context management workflow: {e}")
         raise
 
 def main():
@@ -164,22 +622,69 @@ def main():
     It uses DefaultAzureCredential for authentication.
     """
     try:
-        # Get subscription ID from environment variable
         subscription_id = SUBSCRIPTION_ID
         if not subscription_id:
             print("Error: AZURE_SUBSCRIPTION_ID environment variable not set.")
             return
 
-        # Authenticate using DefaultAzureCredential
-        credential = DefaultAzureCredential()
+        # Try DefaultCredentials first
+        try:
+            credential = DefaultAzureCredential()
+            # Test the credential by getting a token
+            credential.get_token("https://management.azure.com/.default")
+            print("Successfully authenticated using environment variables.")
+        except Exception as e:
+            print("Environment credential failed:", str(e))
+            print("\nFalling back to DefaultAzureCredential...")
+            try:
+                credential = DefaultAzureCredential()
+                credential.get_token("https://management.azure.com/.default")
+                print("Successfully authenticated using DefaultAzureCredential.")
+            except Exception as auth_error:
+                print("\nAuthentication failed:")
+                print(str(auth_error))
+                print(AUTH_SETUP_HINT)
+                return
 
-        # Create the management client
+        # Create the management client with subscription ID
         workload_client = WorkloadOrchestrationMgmtClient(credential, subscription_id)
 
         print("Successfully authenticated with Azure.")
         
         resource_group_name = RESOURCE_GROUP
 
+        # STEP 1: Manage Azure context with random capabilities
+        print("=" * 50)
+        print("STEP 1: Managing Azure Context with Random Capabilities")
+        print("=" * 50)
+        try:
+            # Use hardcoded values for context management
+            context_result = manage_azure_context(workload_client)
+            
+            # Extract capabilities from context for use in other resources - USE ONLY THE FIRST ONE
+            all_capabilities = []
+            if hasattr(context_result, 'properties') and hasattr(context_result.properties, 'capabilities'):
+                all_capabilities = [cap.name if hasattr(cap, 'name') else cap['name'] for cap in context_result.properties.capabilities]
+            elif hasattr(context_result, 'properties') and context_result.properties.get('capabilities'):
+                caps = context_result.properties['capabilities']
+                all_capabilities = [cap.name if hasattr(cap, 'name') else cap['name'] for cap in caps]
+            
+            if not all_capabilities:
+                # Fallback to default capability
+                capabilities = [SINGLE_CAPABILITY_NAME]
+                print("Using fallback single capability:", capabilities)
+            else:
+                # Use only the first capability to ensure consistency
+                capabilities = [all_capabilities[0]]
+                print(f"Using single capability from context: {capabilities}")
+                
+        except Exception as e:
+            print(f"Context management failed, using default capabilities: {e}")
+            capabilities = [SINGLE_CAPABILITY_NAME]
+
+        print("=" * 50)
+        print("STEP 2: Creating Azure Resources")
+        print("=" * 50)
         try:
             # Create a new schema
             print(f"Creating schema in resource group: {resource_group_name}")
@@ -191,24 +696,56 @@ def main():
             schema_version = create_schema_version(workload_client, resource_group_name, schema.name)
             print(f"Schema version created successfully: {schema_version.name}")
 
-            # Create a new solution template
+            # Create a new solution template with generated capabilities
             print(f"Creating solution template in resource group: {resource_group_name}")
-            solution_template = create_solution_template(workload_client, resource_group_name)
+            solution_template = create_solution_template(workload_client, resource_group_name, capabilities)
             print(f"Solution template created successfully: {solution_template.name}")
 
             # Create a new solution template version
             print(f"Creating solution template version for template: {solution_template.name}")
-            solution_template_version = create_solution_template_version(workload_client, resource_group_name, solution_template.name, schema.name, schema_version.name)
-            print(f"Solution template version created successfully: {solution_template_version.name}")
+            solution_template_version_result = create_solution_template_version(workload_client, resource_group_name, solution_template.name, schema.name, schema_version.name)
+            print(f"Solution template version created successfully: {solution_template_version_result}")
+
+            # Extract the solution template version ID from the response properties
+            if (hasattr(solution_template_version_result, 'properties') and
+                hasattr(solution_template_version_result.properties, 'solutionTemplateVersionId')):
+                solution_template_version_id = solution_template_version_result.properties.solutionTemplateVersionId
+            else:
+                solution_template_version_id = solution_template_version_result.properties.get('solutionTemplateVersionId')
         except Exception as e:
             print(f"An error occurred during resource creation: {e}")
             return
 
-        # Create a new target
+        # Create a new target with generated capabilities
         print(f"Creating target in resource group: {resource_group_name}")
-        target = create_target(workload_client, resource_group_name)
+        target = create_target(workload_client, resource_group_name, capabilities)
         print(f"Target created successfully: {target.name}")
 
+        # Review target using the extracted solution template version ID
+        print(f"Using solution template version ID: {solution_template_version_id}")
+
+        solution_version_id = review_target(
+            workload_client,
+            resource_group_name,
+            target.name,
+            solution_template_version_id
+        )
+
+        # Publish target
+        publish_result = publish_target(
+            workload_client,
+            resource_group_name,
+            target.name,
+            solution_version_id
+        )
+
+        # Install target
+        install_result = install_target(
+            workload_client,
+            resource_group_name,
+            target.name,
+            solution_version_id
+        )
 
 
     except HttpResponseError as e:
