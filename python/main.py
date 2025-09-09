@@ -2,6 +2,7 @@ import os
 import random
 import time
 import json
+import requests
 from datetime import datetime
 from azure.identity import DefaultAzureCredential, EnvironmentCredential
 from azure.mgmt.workloadorchestration import WorkloadOrchestrationMgmtClient
@@ -115,27 +116,52 @@ def create_schema_version(client, resource_group_name, schema_name):
     ErrorThreshold:
       type: float
       required: true
-    AppName:
-      type: string
-      required: true
-    TemperatureRangeMax:
-      type: int
-      required: true
+      editableAt:
+        - line
+      editableBy:
+        - OT
     HealthCheckEndpoint:
       type: string
-      required: true
+      required: false
+      editableAt:
+        - line
+      editableBy:
+        - OT
     EnableLocalLog:
       type: boolean
       required: true
+      editableAt:
+        - line
+      editableBy:
+        - OT
     AgentEndpoint:
       type: string
       required: true
+      editableAt:
+        - line
+      editableBy:
+        - OT
     HealthCheckEnabled:
       type: boolean
-      required: true
+      required: false
+      editableAt:
+        - line
+      editableBy:
+        - OT
     ApplicationEndpoint:
       type: string
-      required: true"""
+      required: true
+      editableAt:
+        - line
+      editableBy:
+        - OT
+    TemperatureRangeMax:
+      type: float
+      required: true
+      editableAt:
+        - line
+      editableBy:
+        - OT"""
                 }
             }
         ).result()
@@ -149,7 +175,7 @@ def create_solution_template(client, resource_group_name, capabilities=None):
         if capabilities is None:
             capabilities = [SINGLE_CAPABILITY_NAME]
         
-        solution_template_name = "sdkexamples-solution"
+        solution_template_name = "sdkexamples-solution1"
         solution_template_result = client.solution_templates.begin_create_or_update(
             resource_group_name=resource_group_name,
             solution_template_name=solution_template_name,
@@ -175,14 +201,14 @@ def create_solution_template_version(client, resource_group_name, solution_templ
   name: {schema_name}
   version: {schema_version}
 configs:
-  AppName: "Hotmelt"
-  TemperatureRangeMax: 100
-  ErrorThreshold: 0.5
-  HealthCheckEndpoint: "http://localhost:8080/health"
-  EnableLocalLog: true
-  AgentEndpoint: "http://localhost:8080/agent"
-  HealthCheckEnabled: true
-  ApplicationEndpoint: "http://localhost:8080/app"
+  AppName: Hotmelt
+  TemperatureRangeMax: ${{{{$val(TemperatureRangeMax)}}}}
+  ErrorThreshold: ${{{{$val(ErrorThreshold)}}}}
+  HealthCheckEndpoint: ${{{{$val(HealthCheckEndpoint)}}}}
+  EnableLocalLog: ${{{{$val(EnableLocalLog)}}}}
+  AgentEndpoint: ${{{{$val(AgentEndpoint)}}}}
+  HealthCheckEnabled: ${{{{$val(HealthCheckEnabled)}}}}
+  ApplicationEndpoint: ${{{{$val(ApplicationEndpoint)}}}}
 """
         solution_template_version_result = client.solution_templates.begin_create_version(
             resource_group_name=resource_group_name,
@@ -366,6 +392,133 @@ def install_target(client, resource_group_name, target_name, solution_version_id
     except Exception as e:
         print(f"Error installing on target: {e}")
         raise
+
+def create_configuration_api_call(credential, subscription_id, resource_group, config_name, solution_name, version, config_values):
+    """
+    Make PUT call to Azure Configuration API to set configuration values
+    """
+    try:
+        # Get bearer token from DefaultAzureCredential
+        token = credential.get_token("https://management.azure.com/.default")
+        bearer_token = token.token
+        
+        # Construct the API URL with correct API version (matching CLI format)
+        url = f"https://management.azure.com/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Edge/configurations/{config_name}/DynamicConfigurations/{solution_name}/versions/version1?api-version=2024-06-01-preview"
+        
+        print("\nDebug: Request URL:")
+        print(url)
+        
+        headers = {
+            "Authorization": f"Bearer {bearer_token}",
+            "Content-Type": "application/json"
+        }
+        print("\nDebug: Request Headers:")
+        print(f"- Content-Type: {headers['Content-Type']}")
+        print("- Authorization: Bearer [token-hidden]")
+        
+        # Build values string from config_values dictionary matching CLI format
+        values_lines = []
+        for key, value in config_values.items():
+            if isinstance(value, bool):
+                # Convert boolean to lowercase string (true/false, not "true"/"false")
+                values_lines.append(f"{key}: {str(value).lower()}")
+            elif isinstance(value, str):
+                # String values without quotes in YAML format
+                values_lines.append(f"{key}: {value}")
+            else:
+                # Numbers and other types
+                values_lines.append(f"{key}: {value}")
+        
+        values_string = "\n".join(values_lines) + "\n"
+        
+        # Request body with all configuration values
+        request_body = {
+            "properties": {
+                "values": values_string,
+                "provisioningState": "Succeeded"
+            }
+        }
+        
+        print(f"Making PUT call to Configuration API: {url}")
+        print(f"Request body: {json.dumps(request_body, indent=2)}")
+        
+        response = requests.put(url, headers=headers, json=request_body)
+        
+        print("\nDebug: Response Details:")
+        print(f"- Status Code: {response.status_code}")
+        print("- Response Headers:")
+        for key, value in response.headers.items():
+            print(f"  {key}: {value}")
+        
+        try:
+            response_json = response.json()
+            print("\nDebug: Response Body (JSON):")
+            print(json.dumps(response_json, indent=2))
+        except json.JSONDecodeError:
+            print("\nDebug: Response Body (Raw):")
+            print(response.text)
+        
+        if response.status_code in [200, 201, 202]:
+            print(f"Configuration API call successful. Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            return response
+        else:
+            print(f"Configuration API call failed. Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            response.raise_for_status()
+            
+    except Exception as e:
+        print(f"Error calling Configuration API: {e}")
+        raise
+
+def get_configuration_api_call(credential, subscription_id, resource_group, config_name, solution_name, version):
+    """
+    Make GET call to Azure Configuration API to retrieve current configuration values
+    """
+    try:
+        # Get bearer token from DefaultAzureCredential
+        token = credential.get_token("https://management.azure.com/.default")
+        bearer_token = token.token
+        
+        # Construct the API URL (same as PUT but for GET)
+        url = f"https://management.azure.com/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Edge/configurations/{config_name}/DynamicConfigurations/{solution_name}/versions/version1?api-version=2024-06-01-preview"
+        
+        headers = {
+            "Authorization": f"Bearer {bearer_token}",
+            "Content-Type": "application/json"
+        }
+        
+        print(f"Making GET call to Configuration API: {url}")
+        
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code in [200]:
+            print(f"Configuration GET API call successful. Status: {response.status_code}")
+            print(f"Retrieved Configuration Response: {response.text}")
+            
+            # Try to parse and pretty print the JSON response
+            try:
+                response_json = response.json()
+                print("Parsed Configuration Data:")
+                print(json.dumps(response_json, indent=2))
+                
+                # Extract and display the actual values if they exist
+                if 'properties' in response_json and 'values' in response_json['properties']:
+                    print(f"Configuration Values: {response_json['properties']['values']}")
+                    
+            except json.JSONDecodeError:
+                print("Response is not valid JSON")
+                
+            return response
+        else:
+            print(f"Configuration GET API call failed. Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            # Don't raise exception for GET failures as it might be expected
+            return None
+            
+    except Exception as e:
+        print(f"Error calling Configuration GET API: {e}")
+        return None
 
 def get_existing_context(client, resource_group_name, context_name):
     """
@@ -553,7 +706,7 @@ def create_or_update_context_with_hierarchies(client, resource_group_name, conte
     def context_operation():
         hierarchies = [
             {"name": "country", "description": "Country level hierarchy"},
-            {"name": "region", "description": "Regional level hierarchy"}, 
+            {"name": "region", "description": "Regional level hierarchy"},
             {"name": "factory", "description": "Factory level hierarchy"},
             {"name": "line", "description": "Production line hierarchy"}
         ]
@@ -567,6 +720,12 @@ def create_or_update_context_with_hierarchies(client, resource_group_name, conte
         }
         
         print(f"Creating/updating context: {context_name}")
+        context_result = client.contexts.begin_create_or_update(
+            resource_group_name=resource_group_name,
+            context_name=context_name,
+            resource=resource
+        ).result()
+        
         context_result = client.contexts.begin_create_or_update(
             resource_group_name=resource_group_name,
             context_name=context_name,
@@ -661,26 +820,55 @@ def main():
             # Use hardcoded values for context management
             context_result = manage_azure_context(workload_client)
             
-            # Extract capabilities from context for use in other resources - USE ONLY THE FIRST ONE
-            all_capabilities = []
-            if hasattr(context_result, 'properties') and hasattr(context_result.properties, 'capabilities'):
-                all_capabilities = [cap.name if hasattr(cap, 'name') else cap['name'] for cap in context_result.properties.capabilities]
-            elif hasattr(context_result, 'properties') and context_result.properties.get('capabilities'):
-                caps = context_result.properties['capabilities']
-                all_capabilities = [cap.name if hasattr(cap, 'name') else cap['name'] for cap in caps]
+            # Extract the NEWLY ADDED capability from context for use in all resources
+            capabilities = None
+            print(f"DEBUG: Extracting capability from context result...")
             
-            if not all_capabilities:
-                # Fallback to default capability
-                capabilities = [SINGLE_CAPABILITY_NAME]
-                print("Using fallback single capability:", capabilities)
-            else:
-                # Use only the first capability to ensure consistency
-                capabilities = [all_capabilities[0]]
-                print(f"Using single capability from context: {capabilities}")
+            if hasattr(context_result, 'properties') and hasattr(context_result.properties, 'capabilities'):
+                context_capabilities = context_result.properties.capabilities
+                print(f"DEBUG: Found {len(context_capabilities)} capabilities in context")
                 
+                if context_capabilities:
+                    # Get the LAST capability (which should be the newly added one)
+                    last_cap = context_capabilities[-1]
+                    print(f"DEBUG: Last capability type: {type(last_cap)}")
+                    print(f"DEBUG: Last capability data: {last_cap}")
+                    
+                    cap_name = last_cap.get('name', '') if isinstance(last_cap, dict) else getattr(last_cap, 'name', '')
+                    if cap_name:
+                        capabilities = [cap_name]
+                        print(f"SELECTED CAPABILITY FOR ALL RESOURCES: {capabilities[0]}")
+                        print(f"DEBUG: This capability will be used consistently across:")
+                        print(f"  - Solution Template")
+                        print(f"  - Target")
+                        print(f"  - All other resource operations")
+                    else:
+                        print("DEBUG: Could not extract capability name from last capability")
+                else:
+                    print("DEBUG: No capabilities found in context")
+            else:
+                print("DEBUG: Context result has no capabilities property")
+            
+            if not capabilities:
+                # Generate a single random capability if none found in context
+                print("DEBUG: No valid capability found, generating new one...")
+                new_capability = generate_single_random_capability()
+                capabilities = [new_capability['name']]
+                print(f"GENERATED NEW CAPABILITY FOR ALL RESOURCES: {capabilities[0]}")
         except Exception as e:
-            print(f"Context management failed, using default capabilities: {e}")
+            print(f"Context management failed, generating new random capability: {e}")
+            new_capability = generate_single_random_capability()
+            capabilities = [new_capability['name']]
+            print(f"FALLBACK CAPABILITY FOR ALL RESOURCES: {capabilities[0]}")
+            
+        # Validate that we have a capability selected
+        if not capabilities or not capabilities[0]:
+            print("ERROR: No capability was selected! Using fallback.")
             capabilities = [SINGLE_CAPABILITY_NAME]
+            
+        print(f"\nFINAL CAPABILITY SELECTION: {capabilities[0]}")
+        print("=" * 60)
+
 
         print("=" * 50)
         print("STEP 2: Creating Azure Resources")
@@ -696,8 +884,17 @@ def main():
             schema_version = create_schema_version(workload_client, resource_group_name, schema.name)
             print(f"Schema version created successfully: {schema_version.name}")
 
-            # Create a new solution template with generated capabilities
+        except Exception as e:
+            print(f"An error occurred during resource creation: {e}")
+            return
+
+        print("Proceeding with solution template and target creation...")
+        print()
+
+        try:
+            # Create a new solution template with the same random capability
             print(f"Creating solution template in resource group: {resource_group_name}")
+            print(f"Using capability: {capabilities}")
             solution_template = create_solution_template(workload_client, resource_group_name, capabilities)
             print(f"Solution template created successfully: {solution_template.name}")
 
@@ -712,16 +909,85 @@ def main():
                 solution_template_version_id = solution_template_version_result.properties.solutionTemplateVersionId
             else:
                 solution_template_version_id = solution_template_version_result.properties.get('solutionTemplateVersionId')
+
+            # Create a new target with the same random capability
+            print(f"Creating target in resource group: {resource_group_name}")
+            print(f"Using capability: {capabilities}")
+            target = create_target(workload_client, resource_group_name, capabilities)
+            print(f"Target created successfully: {target.name}")
+
         except Exception as e:
-            print(f"An error occurred during resource creation: {e}")
+            print(f"An error occurred during target creation: {e}")
             return
 
-        # Create a new target with generated capabilities
-        print(f"Creating target in resource group: {resource_group_name}")
-        target = create_target(workload_client, resource_group_name, capabilities)
-        print(f"Target created successfully: {target.name}")
+        # STEP 3: Configuration API Call - Set configuration values before review
+        print("=" * 50)
+        print("STEP 3: Setting Configuration Values via Configuration API")
+        print("=" * 50)
+        try:
+            # Configuration parameters for the API call
+            config_name = target.name + "Config"  # Configuration name should be targetName+Config
+            solution_name = "sdkexamples-solution1"  # Use hardcoded solution template name
+            version = "1.0.0"  # Configuration version
+            
+            # Configuration values matching the schema
+            config_values = {
+                "ErrorThreshold": 35.3,
+                "HealthCheckEndpoint": "http://localhost:8080/health",
+                "EnableLocalLog": True,
+                "AgentEndpoint": "http://localhost:8080/agent",
+                "HealthCheckEnabled": True,
+                "ApplicationEndpoint": "http://localhost:8080/app",
+                "TemperatureRangeMax": 100.5
+            }
+            
+            print(f"Calling Configuration API with:")
+            print(f"  Config Name: {config_name}")
+            print(f"  Solution Name: {solution_name}")
+            print(f"  Version: {version}")
+            print(f"  Configuration Values:")
+            for key, value in config_values.items():
+                print(f"    {key}: {value}")
+            
+            config_response = create_configuration_api_call(
+                credential,
+                subscription_id,
+                resource_group_name,
+                config_name,
+                solution_name,
+                version,
+                config_values
+            )
+            print("Configuration API call completed successfully")
+            
+            # STEP 3.1: GET Configuration to verify the values were set correctly
+            print("\n" + "=" * 50)
+            print("STEP 3.1: Getting Configuration to verify values")
+            print("=" * 50)
+            try:
+                get_response = get_configuration_api_call(
+                    credential,
+                    subscription_id,
+                    resource_group_name,
+                    config_name,
+                    solution_name,
+                    version
+                )
+                if get_response:
+                    print("Configuration GET call completed successfully")
+                else:
+                    print("Configuration GET call returned no data")
+            except Exception as get_error:
+                print(f"Configuration GET call failed: {get_error}")
+            
+        except Exception as e:
+            print(f"Configuration API call failed (continuing with workflow): {e}")
+            # Continue with the workflow even if Configuration API fails
 
         # Review target using the extracted solution template version ID
+        print("=" * 50)
+        print("STEP 4: Review Target Deployment")
+        print("=" * 50)
         print(f"Using solution template version ID: {solution_template_version_id}")
 
         solution_version_id = review_target(
@@ -730,6 +996,28 @@ def main():
             target.name,
             solution_template_version_id
         )
+
+        print("=" * 50)
+        print("STEP 5: Publish and Install Solution")
+        print("=" * 50)
+        print("The workflow has completed the following steps:")
+        print("✓ Context management with capabilities")
+        print("✓ Schema creation")
+        print("✓ Solution template creation")
+        print("✓ Target creation")
+        print("✓ Configuration API calls")
+        print("✓ Target review")
+        print()
+        print("TARGET INFORMATION:")
+        print(f"  Name: {target.name}")
+        print(f"  Resource Group: {resource_group_name}")
+        print(f"  Capabilities: {capabilities}")
+        print()
+        print("CONFIGURATION COMPLETED:")
+        print(f"  Config Name: {target.name}Config")
+        print(f"  Solution Name: sdkexamples-solution1")
+        print()
+        print("Proceeding with publish and install operations...")
 
         # Publish target
         publish_result = publish_target(
