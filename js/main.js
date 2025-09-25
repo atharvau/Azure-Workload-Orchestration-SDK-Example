@@ -100,7 +100,18 @@ async function createSolutionTemplateVersion(client, resourceGroupName, solution
     const version = generateRandomSemanticVersion(false, false);
     const solutionTemplateVersionName = version;
     console.log(`Creating solution template version '${solutionTemplateVersionName}'...`);
-    const configurationsStr = `schema:\n  name: ${schemaName}\n  version: ${schemaVersion}`;
+    const configurationsStr = `schema:
+  name: ${schemaName}
+  version: ${schemaVersion}
+configs:
+  AppName: Hotmelt
+  TemperatureRangeMax: \${{$val(TemperatureRangeMax)}}
+  ErrorThreshold: \${{$val(ErrorThreshold)}}
+  HealthCheckEndpoint: \${{$val(HealthCheckEndpoint)}}
+  EnableLocalLog: \${{$val(EnableLocalLog)}}
+  AgentEndpoint: \${{$val(AgentEndpoint)}}
+  HealthCheckEnabled: \${{$val(HealthCheckEnabled)}}
+  ApplicationEndpoint: \${{$val(ApplicationEndpoint)}}`;
     
     const result = await client.solutionTemplates.createVersion(resourceGroupName, solutionTemplateName, {
         version: solutionTemplateVersionName,
@@ -119,30 +130,6 @@ async function createSolutionTemplateVersion(client, resourceGroupName, solution
         }
     });
 
-    console.log(`DEBUG: Created solution template version with full result:${result}`);
-    console.log(JSON.stringify(result, null, 2));
-    
-    // Log specific fields for debugging
-    if (result) {
-        console.log(`DEBUG: Result ID: ${result.id}`);
-        console.log(`DEBUG: Result Name: ${result.name}`);
-        console.log(`DEBUG: Result Type: ${result.type}`);
-        console.log(`DEBUG: Result Status: ${result.status}`);
-        
-        // Check for LRO-specific fields
-        if (result.azureAsyncOperation) console.log(`DEBUG: Azure Async Operation: ${result.azureAsyncOperation}`);
-        if (result.location) console.log(`DEBUG: Location Header: ${result.location}`);
-        if (result.retryAfter) console.log(`DEBUG: Retry After: ${result.retryAfter}`);
-        
-        // Check for correlation ID in various places
-        if (result.correlationId) console.log(`DEBUG: Correlation ID: ${result.correlationId}`);
-        if (result._response && result._response.headers) {
-            const headers = result._response.headers;
-            console.log(`DEBUG: Response Headers:`, JSON.stringify(headers, null, 2));
-            if (headers['x-ms-correlation-request-id']) console.log(`DEBUG: X-MS-Correlation-Request-ID: ${headers['x-ms-correlation-request-id']}`);
-            if (headers['x-ms-request-id']) console.log(`DEBUG: X-MS-Request-ID: ${headers['x-ms-request-id']}`);
-        }
-    }
     
     // The correct solution template version ID should be constructed from the resource path
     const solutionTemplateVersionId = `/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${resourceGroupName}/providers/Microsoft.Edge/solutionTemplates/${solutionTemplateName}/versions/${solutionTemplateVersionName}`;
@@ -183,33 +170,68 @@ async function createTarget(client, resourceGroupName, capabilities) {
 }
 
 async function reviewTarget(client, resourceGroupName, targetName, solutionTemplateVersionId) {
-    console.log(`Starting review for target ${targetName}...`);
+    console.log(`Starting review for target ${targetName} with template version ID: ${solutionTemplateVersionId}`);
+    
+    // First, trigger the review process. This creates a new solution version.
     const reviewOperation = async () => {
         return await client.targets.reviewSolutionVersion(resourceGroupName, targetName, {
             solutionDependencies: [],
-            solutionInstanceName: targetName,
+            solutionInstanceName: targetName, // Assuming solution instance name is same as target name
             solutionTemplateVersionId: solutionTemplateVersionId
         });
     };
-    const solutionName = "sdkexamples-solution1";
-    const solutionVersionName = "sdkbox-m23-7.1.73.1";
-
-    const result = await client.solutionVersions.get(
-    resourceGroupName,
-    targetName,
-    solutionName,
-    solutionVersionName
-    );
-    console.log(result);
-
     const reviewResult = await retryOperation(reviewOperation);
-    console.log(`DEBUG: Review operation result:`, JSON.stringify(reviewResult, null, 2));
-    const versionId = reviewResult.id;
-    if (versionId) {
-        console.log(`Found solution version ID: ${versionId}`);
-        return result.id;
+
+    // Now, list all solution versions for the relevant solution to find the one we just created.
+    // Now, list all solution versions for the relevant solution to find the one we just created.
+    const solutionName = "sdkexamples-solution1"; // This should match the solution template name
+    console.log(`Listing all solution versions for solution '${solutionName}' on target '${targetName}'...`);
+
+    const solutionVersions = client.solutionVersions.listBySolution(
+        resourceGroupName,
+        targetName,
+        solutionName
+    );
+
+    const solutionVersionList = [];
+    for await (const version of solutionVersions) {
+        solutionVersionList.push(version);
+        console.log("------------------------------------");
+        console.log(`Found Solution Version: ${version.name}`);
+        console.log(`  ID: ${version.id}`);
+        if (version.properties) {
+            console.log(`  State: ${version.properties.state}`);
+            console.log(`  Provisioning State: ${version.properties.provisioningState}`);
+            console.log(`  Template Version ID: ${version.properties.solutionTemplateVersionId}`);
+        }
     }
-    throw new Error("Could not find ID in review response");
+    console.log("------------------------------------");
+
+    // Filter to find the entry that matches the solutionTemplateVersionId we used for the review
+    const matchingVersion = solutionVersionList.find(version => 
+        version.properties && version.properties.solutionTemplateVersionId === solutionTemplateVersionId
+    );
+
+    if (matchingVersion) {
+        console.log(`Found matching solution version: ${matchingVersion.name}`);
+        console.log(`  Extracted Review ID: ${matchingVersion.properties.reviewId}`);
+        console.log(`  Revision: ${matchingVersion.properties.revision}`);
+        console.log(`  State: ${matchingVersion.properties.state}`);
+        
+        // Return the full ID of the solution version for publish/install
+        console.log(`Returning ID for further steps: ${matchingVersion.id}`);
+        return matchingVersion.id;
+    } else {
+        console.error(`No matching solution version found for solutionTemplateVersionId: ${solutionTemplateVersionId}`);
+        console.log("Available solution template version IDs found on target:");
+        
+        // Fallback to original behavior if no match found, though this is less reliable.
+        if (reviewResult.id) {
+            console.warn(`Falling back to ID from initial review response: ${reviewResult.id}`);
+            return reviewResult.id;
+        }
+        throw new Error("Could not find a matching solution version ID after review and no fallback ID was available.");
+    }
 }
 
 async function publishTarget(client, resourceGroupName, targetName, solutionVersionId) {
