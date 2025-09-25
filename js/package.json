@@ -1,18 +1,23 @@
 {
-  "name": "workloadorchestration-example",
+  "name": "azure-sdk-js-test",
   "version": "1.0.0",
-  "description": "Example implementation of Azure WorkloadOrchestration SDK",
+  "description": "Azure Workload Orchestration SDK test in JavaScript",
   "main": "main.js",
   "type": "module",
   "scripts": {
-    "start": "node main.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node main.js"
   },
-  "keywords": [],
+  "keywords": [
+    "azure",
+    "sdk",
+    "javascript"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@azure/arm-workloadorchestration": "1.0.0-beta.1",
-    "@azure/identity": "^3.3.0"
+    "@azure/arm-workloadorchestration": "^1.0.0-beta.1",
+    "@azure/identity": "^4.0.0",
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5"
   }
 }

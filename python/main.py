@@ -250,7 +250,7 @@ def create_target(client, resource_group_name, capabilities=None):
         capabilities = [SINGLE_CAPABILITY_NAME]
     
     def create_operation():
-        target_name = "sdkbox-mk799"
+        target_name = "sdkbox-m23"
         target_result = client.targets.begin_create_or_update(
             resource_group_name=resource_group_name,
             target_name=target_name,
@@ -869,6 +869,10 @@ def main():
         print(f"\nFINAL CAPABILITY SELECTION: {capabilities[0]}")
         print("=" * 60)
 
+        # Wait 30 seconds after capability selection
+        print("\nWaiting 30 seconds after capability selection...")
+        time.sleep(30)
+        print("Continuing with resource creation...\n")
 
         print("=" * 50)
         print("STEP 2: Creating Azure Resources")

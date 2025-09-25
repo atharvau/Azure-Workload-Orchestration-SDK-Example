@@ -1,86 +1,58 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example</groupId>
-    <artifactId>workloadorch</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>com.azure.resourcemanager</groupId>
+    <artifactId>workloadorchestration-sample</artifactId>
+    <version>1</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <azure.identity.version>1.11.1</azure.identity.version>
-        <azure.workloadorch.version>1.0.0-beta.1</azure.workloadorch.version>
-        <slf4j.version>1.7.36</slf4j.version>
-        <logback.version>1.2.11</logback.version>
-        <junit.version>5.10.0</junit.version>
     </properties>
 
     <dependencies>
-        <!-- Azure SDK Dependencies -->
+        <!-- Azure SDK for Workload Orchestration -->
         <dependency>
-            <groupId>com.azure.resourcemanager</groupId>
-            <artifactId>azure-resourcemanager-workloadorchestration</artifactId>
-            <version>${azure.workloadorch.version}</version>
-        </dependency>
+    <groupId>com.azure.resourcemanager</groupId>
+    <artifactId>azure-resourcemanager-workloadorchestration</artifactId>
+    <version>1.0.0-beta.1</version>
+</dependency>
+
+
+        <!-- Azure Identity for authentication -->
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-identity</artifactId>
-            <version>${azure.identity.version}</version>
+            <version>1.18.0</version>
         </dependency>
 
-        <!-- Logging Dependencies -->
+        <!-- SLF4J for logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.13</version>
         </dependency>
+        
+        <!-- GSON for JSON processing in direct API calls -->
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
-        </dependency>
-
-        <!-- Test Dependencies -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>5.5.0</version>
-            <scope>test</scope>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.11.0</version>
         </dependency>
     </dependencies>
 
     <build>
+        <sourceDirectory>.</sourceDirectory>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.1.2</version>
-            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.5.1</version>
                 <configuration>
-                    <mainClass>com.example.workloadorch.WorkloadOrchestrationDemo</mainClass>
+                    <mainClass>WorkloadOrchestrationSample</mainClass>
                 </configuration>
             </plugin>
         </plugins>

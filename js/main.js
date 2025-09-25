@@ -1,447 +1,429 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+import { config } from 'dotenv';
+import { DefaultAzureCredential } from '@azure/identity';
+import { WorkloadOrchestrationManagementClient } from '@azure/arm-workloadorchestration';
+import axios from 'axios';
 
-import { WorkloadOrchestrationManagementClient } from "@azure/arm-workloadorchestration";
-import { DefaultAzureCredential } from "@azure/identity";
+// Load environment variables from .env file
+config();
 
-/**
- * This sample demonstrates how to create a complete workload orchestration workflow including:
- * 1. Schema creation with random semantic versioning
- * 2. Schema version creation with random semantic versioning
- * 3. Solution template creation (matching CLI parameters)
- * 4. Solution template version creation with random semantic versioning
- * 5. Target creation with matching capabilities
- * 
- * The solution template references the actual created schema and schema version.
- * The target uses the same capabilities as the solution template for consistency.
- * Based on CLI command: az workload-orchestration solution-template create --solution-template-name "sdkexamples-solution" 
- * -g sdkexamples -l eastus2euap --capabilities "sdkexamples-soap" --description "This is Holtmelt Solution"
- *
- * @summary create complete workload orchestration resources with random semantic versioning
- */
+// --- Configuration ---
+const LOCATION = "eastus2euap";
+const SUBSCRIPTION_ID = process.env.AZURE_SUBSCRIPTION_ID || "973d15c6-6c57-447e-b9c6-6d79b5b784ab";
+const RESOURCE_GROUP = "sdkexamples";
+const CONTEXT_RESOURCE_GROUP = "Mehoopany";
+const CONTEXT_NAME = "Mehoopany-Context";
+const SINGLE_CAPABILITY_NAME = "sdkexamples-soap";
 
-// Configuration
-const SUBSCRIPTION_ID = "973d15c6-6c57-447e-b9c6-6d79b5b784ab";
+// --- Helper Functions ---
 
-/**
- * Generates a random semantic version string
- * @param {Object} options - Configuration options
- * @param {boolean} options.includePrerelease - Whether to include prerelease tags
- * @param {boolean} options.includeBuild - Whether to include build metadata
- * @param {number} options.majorMax - Maximum value for major version (default: 10)
- * @param {number} options.minorMax - Maximum value for minor version (default: 20)
- * @param {number} options.patchMax - Maximum value for patch version (default: 100)
- * @returns {string} A random semantic version string
- */
-function generateRandomSemanticVersion(options = {}) {
-    const {
-        includePrerelease = Math.random() > 0.7, // 30% chance of prerelease
-        includeBuild = Math.random() > 0.8,      // 20% chance of build metadata
-        majorMax = 10,
-        minorMax = 20,
-        patchMax = 100
-    } = options;
-    
-    // Generate major.minor.patch
-    const major = Math.floor(Math.random() * majorMax);
-    const minor = Math.floor(Math.random() * minorMax);
-    const patch = Math.floor(Math.random() * patchMax);
-    
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function retryOperation(operation, maxAttempts = 3, delaySeconds = 30) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            return await operation();
+        } catch (e) {
+            if (attempt === maxAttempts) {
+                console.error(`Operation failed after ${maxAttempts} attempts.`);
+                throw e;
+            }
+            console.log(`Attempt ${attempt} failed: ${e.message}`);
+            console.log(`Waiting ${delaySeconds} seconds before retrying...`);
+            await sleep(delaySeconds * 1000);
+            delaySeconds *= 2; // Exponential backoff
+        }
+    }
+}
+
+function generateRandomSemanticVersion(includePrerelease = false, includeBuild = false) {
+    const major = Math.floor(Math.random() * 11);
+    const minor = Math.floor(Math.random() * 21);
+    const patch = Math.floor(Math.random() * 101);
     let version = `${major}.${minor}.${patch}`;
-    
-    // Add prerelease if needed
     if (includePrerelease) {
         const prereleaseTypes = ['alpha', 'beta', 'rc'];
         const prereleaseType = prereleaseTypes[Math.floor(Math.random() * prereleaseTypes.length)];
         const prereleaseNum = Math.floor(Math.random() * 10) + 1;
         version += `-${prereleaseType}.${prereleaseNum}`;
     }
-    
-    // Add build metadata if needed
     if (includeBuild) {
-        // Build metadata could be date-based, git commit hash-like, or just a number
-        const buildTypes = [
-            // Date format: YYYYMMDD
-            `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}`,
-            // Git hash-like
-            `${Math.random().toString(36).substring(2, 8)}`,
-            // Build number
-            `${Math.floor(Math.random() * 10000)}`
-        ];
-        const buildMeta = buildTypes[Math.floor(Math.random() * buildTypes.length)];
-        version += `+${buildMeta}`;
+        const buildNum = Math.floor(Math.random() * 10000) + 1;
+        version += `+${buildNum}`;
     }
-    
     return version;
 }
 
-async function createSchema(client, resourceGroupName) {
-    try {
-        const randomVersion = generateRandomSemanticVersion({ includePrerelease: false, includeBuild: false });
-        const schemaName = `sdkexamples-schema-v${randomVersion}`;
-        
-        console.log(`Creating schema with random version: ${schemaName}`);
-        
-        const schema = await client.schemas.createOrUpdate(
-            resourceGroupName,
-            schemaName,
-            {
-                location: "eastus2euap",
-                properties: {}
-            }
-        );
+// --- SDK Interaction Functions ---
 
-        return schema;
-    } catch (error) {
-        console.error(`Error creating schema: ${error.message}`);
-        throw error;
-    }
+async function createSchema(client, resourceGroupName) {
+    const version = generateRandomSemanticVersion();
+    const schemaName = `sdkexamples-schema-v${version}`;
+    console.log(`Creating schema '${schemaName}'...`);
+    return await client.schemas.createOrUpdate(resourceGroupName, schemaName, {
+        location: LOCATION,
+        properties: {}
+    });
 }
 
 async function createSchemaVersion(client, resourceGroupName, schemaName) {
-    try {
-        const randomSchemaVersion = generateRandomSemanticVersion({ includePrerelease: false, includeBuild: false });
-        
-        console.log(`Creating schema version with random version: ${randomSchemaVersion}`);
-        
-        const schemaVersion = await client.schemaVersions.createOrUpdate(
-            resourceGroupName,
-            schemaName,
-            randomSchemaVersion,
-            {
-                properties: {
-                    value: `rules:
+    const version = generateRandomSemanticVersion();
+    const schemaVersionName = version;
+    console.log(`Creating schema version '${schemaVersionName}' for schema '${schemaName}'...`);
+    const schemaValue = `rules:
   configs:
-    ErrorThreshold:
-      type: float
-      required: true
-    AppName:
-      type: string
-      required: true
-    TemperatureRangeMax:
-      type: int
-      required: true
-    HealthCheckEndpoint:
-      type: string
-      required: true
-    EnableLocalLog:
-      type: boolean
-      required: true
-    AgentEndpoint:
-      type: string
-      required: true
-    HealthCheckEnabled:
-      type: boolean
-      required: true
-    ApplicationEndpoint:
-      type: string
-      required: true`
-                }
-            }
-        );
-
-        return schemaVersion;
-    } catch (error) {
-        console.error(`Error creating schema version: ${error.message}`);
-        throw error;
-    }
+    ErrorThreshold: { type: float, required: true, editableAt: [line], editableBy: [OT] }
+    HealthCheckEndpoint: { type: string, required: false, editableAt: [line], editableBy: [OT] }
+    EnableLocalLog: { type: boolean, required: true, editableAt: [line], editableBy: [OT] }
+    AgentEndpoint: { type: string, required: true, editableAt: [line], editableBy: [OT] }
+    HealthCheckEnabled: { type: boolean, required: false, editableAt: [line], editableBy: [OT] }
+    ApplicationEndpoint: { type: string, required: true, editableAt: [line], editableBy: [OT] }
+    TemperatureRangeMax: { type: float, required: true, editableAt: [line], editableBy: [OT] }`;
+    
+    return await client.schemaVersions.createOrUpdate(resourceGroupName, schemaName, schemaVersionName, {
+        properties: { value: schemaValue }
+    });
 }
 
-async function createTarget(client, resourceGroupName) {
-    try {
-        const targetName = "sdkbox-mk799";
-        
-        console.log(`Creating target: ${targetName}`);
-        
-        const target = await client.targets.createOrUpdate(
-            resourceGroupName,
-            targetName,
-            {
-                extendedLocation: {
-                    name: "/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/configmanager-cloudtest-playground-portal/providers/Microsoft.ExtendedLocation/customLocations/den-Location",
-                    type: "CustomLocation"
-                },
-                location: "eastus2euap",
-                properties: {
-                    capabilities: ["sdkexamples-soap"],
-                    contextId: "/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/Mehoopany/providers/Microsoft.Edge/contexts/Mehoopany-Context",
-                    description: "This is MK-71 Site",
-                    displayName: "sdkbox-mk71",
-                    hierarchyLevel: "line",
-                    solutionScope: "new",
-                    targetSpecification: {
-                        topologies: [
-                            {
-                                bindings: [
-                                    {
-                                        role: "helm.v3",
-                                        provider: "providers.target.helm",
-                                        config: {
-                                            inCluster: "true"
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            }
-        );
-
-        return target;
-    } catch (error) {
-        console.error(`Error creating target: ${error.message}`);
-        throw error;
-    }
-}
-
-async function solutionTemplateCreateExactCliReplica() {
-  const credential = new DefaultAzureCredential();
-  const resourceGroupName = "sdkexamples";
-  const solutionTemplateName = "sdkexamples-solution";
-  
-  const client = new WorkloadOrchestrationManagementClient(credential, SUBSCRIPTION_ID);
-  
-  // Step 1: Create schema
-  console.log("Creating schema...");
-  const schema = await createSchema(client, resourceGroupName);
-  console.log("Schema created:", schema.name);
-  
-  // Step 2: Create schema version
-  console.log("Creating schema version...");
-  const schemaVersion = await createSchemaVersion(client, resourceGroupName, schema.name);
-  console.log("Schema version created:", schemaVersion.name);
-  
-  // Step 3: Create solution template (matches first PUT request from CLI)
-  console.log("Creating solution template...");
-  const solutionTemplate = await client.solutionTemplates.createOrUpdate(
-    resourceGroupName,
-    solutionTemplateName,
-    {
-      location: "eastus2euap",
-      properties: {
-        capabilities: ["sdkexamples-soap"],
-        description: "This is Holtmelt Solution",
-      },
-    }
-  );
-  
-  console.log("Solution template created:", solutionTemplate.name);
-  
-  // Wait for solution template to be ready
-  await new Promise(resolve => setTimeout(resolve, 10000));
-  
-  // Step 4: Create solution template version (matches POST request from CLI)
-  console.log("Creating solution template version...");
-  
-  // Configuration using the actual created schema
-  const configurations = `schema:
-  name: ${schema.name}
-  version: ${schemaVersion.name}
-configs:
-  AppName: Hotmelt`;
-
-  // Exact specification from CLI request body
-  const specification = {
-    components: [
-      {
-        name: "helmcomponent",
-        type: "helm.v3",
+async function createSolutionTemplate(client, resourceGroupName, capabilities) {
+    const solutionTemplateName = "sdkexamples-solution1";
+    console.log(`Creating solution template '${solutionTemplateName}'...`);
+    return await client.solutionTemplates.createOrUpdate(resourceGroupName, solutionTemplateName, {
+        location: LOCATION,
         properties: {
-          chart: {
-            repo: "ghcr.io/eclipse-symphony/tests/helm/simple-chart",
-            version: "0.3.0",
-            wait: true,
-            timeout: "5m",
-          },
-        },
-      },
-    ],
-  };
+            capabilities: capabilities || [SINGLE_CAPABILITY_NAME],
+            description: "This is Holtmelt Solution with random capabilities"
+        }
+    });
+}
 
-  // Generate random version to avoid conflicts
-  const randomVersion = generateRandomSemanticVersion({ includePrerelease: false, includeBuild: false });
-  console.log(`Using random version: ${randomVersion}`);
+async function createSolutionTemplateVersion(client, resourceGroupName, solutionTemplateName, schemaName, schemaVersion) {
+    const version = generateRandomSemanticVersion(false, false);
+    const solutionTemplateVersionName = version;
+    console.log(`Creating solution template version '${solutionTemplateVersionName}'...`);
+    const configurationsStr = `schema:\n  name: ${schemaName}\n  version: ${schemaVersion}`;
+    
+    const result = await client.solutionTemplates.createVersion(resourceGroupName, solutionTemplateName, {
+        version: solutionTemplateVersionName,
+        solutionTemplateVersion: {
+            properties: {
+                configurations: configurationsStr,
+                specification: {
+                    components: [{
+                        name: "helmcomponent",
+                        type: "helm.v3",
+                        properties: { chart: { repo: "ghcr.io/eclipse-symphony/tests/helm/simple-chart", version: "0.3.0", wait: true, timeout: "5m" } }
+                    }]
+                },
+                orchestratorType: "TO"
+            }
+        }
+    });
 
-  const versionPayload = {
-    solutionTemplateVersion: {
-      properties: {
-        configurations,
-        specification,
-        orchestratorType: "TO",
-      },
-    },
-    version: randomVersion,
-  };
+    console.log(`DEBUG: Created solution template version with full result:${result}`);
+    console.log(JSON.stringify(result, null, 2));
+    
+    // Log specific fields for debugging
+    if (result) {
+        console.log(`DEBUG: Result ID: ${result.id}`);
+        console.log(`DEBUG: Result Name: ${result.name}`);
+        console.log(`DEBUG: Result Type: ${result.type}`);
+        console.log(`DEBUG: Result Status: ${result.status}`);
+        
+        // Check for LRO-specific fields
+        if (result.azureAsyncOperation) console.log(`DEBUG: Azure Async Operation: ${result.azureAsyncOperation}`);
+        if (result.location) console.log(`DEBUG: Location Header: ${result.location}`);
+        if (result.retryAfter) console.log(`DEBUG: Retry After: ${result.retryAfter}`);
+        
+        // Check for correlation ID in various places
+        if (result.correlationId) console.log(`DEBUG: Correlation ID: ${result.correlationId}`);
+        if (result._response && result._response.headers) {
+            const headers = result._response.headers;
+            console.log(`DEBUG: Response Headers:`, JSON.stringify(headers, null, 2));
+            if (headers['x-ms-correlation-request-id']) console.log(`DEBUG: X-MS-Correlation-Request-ID: ${headers['x-ms-correlation-request-id']}`);
+            if (headers['x-ms-request-id']) console.log(`DEBUG: X-MS-Request-ID: ${headers['x-ms-request-id']}`);
+        }
+    }
+    
+    // The correct solution template version ID should be constructed from the resource path
+    const solutionTemplateVersionId = `/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${resourceGroupName}/providers/Microsoft.Edge/solutionTemplates/${solutionTemplateName}/versions/${solutionTemplateVersionName}`;
+    
+    // Add the ID to the result object for consistency
+    result.id = solutionTemplateVersionId;
+    result.name = solutionTemplateVersionName;
+    
+    return result;
+}
 
-  const poller = await client.solutionTemplates.createVersion(
-    resourceGroupName,
-    solutionTemplateName,
-    versionPayload
-  );
-
-  // Enhanced polling with multiple approaches to handle beta SDK
-  let result;
-  let attempts = 0;
-  const maxAttempts = 5;
-
-  while (!result && attempts < maxAttempts) {
-    attempts++;
-    console.log(`Polling attempt ${attempts}/${maxAttempts}...`);
-
-    try {
-      // Approach 1: Standard pollUntilDone
-      if (typeof poller.pollUntilDone === "function") {
-        console.log("Using pollUntilDone...");
-        result = await poller.pollUntilDone({
-          intervalInMs: 2000,
+async function createTarget(client, resourceGroupName, capabilities) {
+    const targetName = "sdkbox-m23";
+    console.log(`Creating target '${targetName}'...`);
+    
+    const createOperation = async () => {
+        return await client.targets.createOrUpdate(resourceGroupName, targetName, {
+            extendedLocation: {
+                name: `/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/configmanager-cloudtest-playground-portal/providers/Microsoft.ExtendedLocation/customLocations/den-Location`,
+                type: "CustomLocation"
+            },
+            location: LOCATION,
+            properties: {
+                capabilities: capabilities || [SINGLE_CAPABILITY_NAME],
+                contextId: `/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${CONTEXT_RESOURCE_GROUP}/providers/Microsoft.Edge/contexts/${CONTEXT_NAME}`,
+                description: "This is MK-71 Site with random capabilities",
+                displayName: "sdkbox-mk71",
+                hierarchyLevel: "line",
+                solutionScope: "new",
+                targetSpecification: {
+                    topologies: [{ bindings: [{ role: "helm.v3", provider: "providers.target.helm", config: { inCluster: "true" } }] }]
+                }
+            }
         });
-        break;
-      }
-    } catch (pollError) {
-      console.log("pollUntilDone failed:", pollError.message);
-    }
-
-    try {
-      // Approach 2: Async iterator
-      if (Symbol.asyncIterator in poller) {
-        console.log("Using async iterator...");
-        for await (const state of poller) {
-          console.log("Poll state:", state.status || "unknown");
-          if (state.isCompleted || state.status === "Succeeded") {
-            result = state.result || state;
-            break;
-          }
-        }
-        if (result) break;
-      }
-    } catch (iterError) {
-      console.log("Async iterator failed:", iterError.message);
-    }
-
-    try {
-      // Approach 3: Manual polling
-      if (typeof poller.poll === "function") {
-        console.log("Using manual polling...");
-        await poller.poll();
-        if (typeof poller.isDone === "function" && poller.isDone()) {
-          result = poller.getResult ? poller.getResult() : poller.result;
-          break;
-        }
-      }
-    } catch (manualError) {
-      console.log("Manual polling failed:", manualError.message);
-    }
-
-    // Approach 4: Check if result is already available
-    if (poller.result) {
-      console.log("Found synchronous result...");
-      result = poller.result;
-      break;
-    }
-
-    // Wait before next attempt
-    if (attempts < maxAttempts) {
-      console.log("Waiting 3 seconds before next attempt...");
-      await new Promise(resolve => setTimeout(resolve, 3000));
-    }
-  }
-
-  // If all polling attempts failed, use the poller itself as result
-  if (!result) {
-    console.log("All polling approaches failed, using poller as result...");
-    result = poller;
-  }
-
-  console.log("Solution template version created successfully");
-  
-  // Step 5: Create target
-  console.log("Creating target...");
-  const target = await createTarget(client, resourceGroupName);
-  console.log("Target created:", target.name);
-  
-  console.log("All resources created successfully");
-  console.log("Result:", result);
-  return { schema, schemaVersion, solutionTemplate, result, target };
+    };
+    
+    return await retryOperation(createOperation);
 }
 
-/**
- * Demonstrates different ways to generate semantic versions
- */
-function demonstrateSemanticVersions() {
-    console.log("\n===== Random Semantic Version Generator Demonstration =====");
-    
-    // Generate 5 standard versions
-    console.log("\nStandard versions (random major.minor.patch):");
-    for (let i = 0; i < 5; i++) {
-        console.log(`  ${generateRandomSemanticVersion({ includePrerelease: false, includeBuild: false })}`);
+async function reviewTarget(client, resourceGroupName, targetName, solutionTemplateVersionId) {
+    console.log(`Starting review for target ${targetName}...`);
+    const reviewOperation = async () => {
+        return await client.targets.reviewSolutionVersion(resourceGroupName, targetName, {
+            solutionDependencies: [],
+            solutionInstanceName: targetName,
+            solutionTemplateVersionId: solutionTemplateVersionId
+        });
+    };
+    const solutionName = "sdkexamples-solution1";
+    const solutionVersionName = "sdkbox-m23-7.1.73.1";
+
+    const result = await client.solutionVersions.get(
+    resourceGroupName,
+    targetName,
+    solutionName,
+    solutionVersionName
+    );
+    console.log(result);
+
+    const reviewResult = await retryOperation(reviewOperation);
+    console.log(`DEBUG: Review operation result:`, JSON.stringify(reviewResult, null, 2));
+    const versionId = reviewResult.id;
+    if (versionId) {
+        console.log(`Found solution version ID: ${versionId}`);
+        return result.id;
     }
-    
-    // Generate 5 versions with prereleases
-    console.log("\nVersions with prereleases (major.minor.patch-prerelease):");
-    for (let i = 0; i < 5; i++) {
-        console.log(`  ${generateRandomSemanticVersion({ includePrerelease: true, includeBuild: false })}`);
-    }
-    
-    // Generate 5 versions with build metadata
-    console.log("\nVersions with build metadata (major.minor.patch+build):");
-    for (let i = 0; i < 5; i++) {
-        console.log(`  ${generateRandomSemanticVersion({ includePrerelease: false, includeBuild: true })}`);
-    }
-    
-    // Generate 5 full versions (with both prerelease and build)
-    console.log("\nFull versions (major.minor.patch-prerelease+build):");
-    for (let i = 0; i < 5; i++) {
-        console.log(`  ${generateRandomSemanticVersion({ includePrerelease: true, includeBuild: true })}`);
-    }
-    
-    // Generate versions with custom ranges
-    console.log("\nCustom range versions (higher version numbers):");
-    for (let i = 0; i < 5; i++) {
-        console.log(`  ${generateRandomSemanticVersion({ 
-            majorMax: 100, 
-            minorMax: 100, 
-            patchMax: 1000 
-        })}`);
+    throw new Error("Could not find ID in review response");
+}
+
+async function publishTarget(client, resourceGroupName, targetName, solutionVersionId) {
+    console.log(`Publishing solution version to target ${targetName}...`);
+    const publishOperation = async () => {
+        const result = await client.targets.publishSolutionVersion(resourceGroupName, targetName, {
+            solutionVersionId: solutionVersionId
+        });
+        console.log("Publish operation completed successfully.");
+        return result;
+    };
+    return await retryOperation(publishOperation);
+}
+
+async function installTarget(client, resourceGroupName, targetName, solutionVersionId) {
+    console.log(`Installing solution on target ${targetName}...`);
+    const installOperation = async () => {
+        await client.targets.installSolution(resourceGroupName, targetName, {
+            solutionVersionId: solutionVersionId
+        });
+        console.log(`Install operation completed for target ${targetName}.`);
+        return { message: "Installation complete." };
+    };
+    return await retryOperation(installOperation);
+}
+
+async function createConfigurationApiCall(credential, subscriptionId, resourceGroup, configName, solutionName, configValues) {
+    const token = await credential.getToken("https://management.azure.com/.default");
+    const url = `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroup}/providers/Microsoft.Edge/configurations/${configName}/DynamicConfigurations/${solutionName}/versions/version1?api-version=2024-06-01-preview`;
+    const headers = { "Authorization": `Bearer ${token.token}`, "Content-Type": "application/json" };
+    const valuesString = Object.entries(configValues).map(([key, value]) => `${key}: ${String(value).toLowerCase()}`).join("\n") + "\n";
+    const requestBody = { properties: { values: valuesString, provisioningState: "Succeeded" } };
+
+    console.log(`Making PUT call to Configuration API...`);
+    try {
+        const response = await axios.put(url, requestBody, { headers });
+        console.log("Configuration API PUT call successful. Status:", response.status);
+        return response;
+    } catch (e) {
+        console.error(`Error calling Configuration API: ${e.response?.data ? JSON.stringify(e.response.data) : e.message}`);
+        throw e;
     }
 }
+
+async function getConfigurationApiCall(credential, subscriptionId, resourceGroup, configName, solutionName) {
+    try {
+        const token = await credential.getToken("https://management.azure.com/.default");
+        const url = `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroup}/providers/Microsoft.Edge/configurations/${configName}/DynamicConfigurations/${solutionName}/versions/version1?api-version=2024-06-01-preview`;
+        console.log(`Making GET call to Configuration API: ${url}`);
+        const response = await axios.get(url, { headers: { "Authorization": `Bearer ${token.token}` } });
+        console.log(`Configuration GET call successful. Status: ${response.status}`);
+        console.log("Retrieved Configuration Data:", JSON.stringify(response.data, null, 2));
+        return response;
+    } catch (e) {
+        console.error(`Configuration GET API call failed. Status: ${e.response?.status}, Response: ${e.response?.data ? JSON.stringify(e.response.data) : e.message}`);
+        return null;
+    }
+}
+
+async function getExistingContext(client, resourceGroupName, contextName) {
+    try {
+        console.log(`DEBUG: Fetching existing context: ${contextName}`);
+        const context = await client.contexts.get(resourceGroupName, contextName);
+        const existingCapabilities = context.properties?.capabilities || [];
+        console.log(`DEBUG: Found ${existingCapabilities.length} existing capabilities.`);
+        return existingCapabilities;
+    } catch (e) {
+        if (e.statusCode === 404) {
+            console.log("DEBUG: Context not found, will create a new one.");
+            return [];
+        }
+        console.error(`DEBUG: Error fetching context: ${e.message}`);
+        throw e;
+    }
+}
+
+function generateSingleRandomCapability() {
+    const capabilityTypes = ["shampoo", "soap"];
+    const capType = capabilityTypes[Math.floor(Math.random() * capabilityTypes.length)];
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const capability = { name: `sdkexamples-${capType}-${randomSuffix}`, description: `SDK generated ${capType} manufacturing capability` };
+    console.log(`DEBUG: Generated single random capability: ${capability.name}`);
+    return capability;
+}
+
+function mergeCapabilitiesWithUniqueness(existingCapabilities, newCapabilities) {
+    const merged = new Map();
+    [...existingCapabilities, ...newCapabilities].forEach(cap => {
+        if (cap.name && !merged.has(cap.name)) {
+            merged.set(cap.name, { name: cap.name, description: cap.description });
+        }
+    });
+    const mergedArray = Array.from(merged.values());
+    console.log(`Capability merge complete. Total unique capabilities: ${mergedArray.length}`);
+    return mergedArray;
+}
+
+async function createOrUpdateContextWithHierarchies(client, resourceGroupName, contextName, capabilities) {
+    const contextOperation = async () => {
+        const hierarchies = [
+            { name: "country", description: "Country level hierarchy" },
+            { name: "region", description: "Regional level hierarchy" },
+            { name: "factory", description: "Factory level hierarchy" },
+            { name: "line", description: "Production line hierarchy" }
+        ];
+        console.log(`Creating/updating context '${contextName}'...`);
+        return await client.contexts.createOrUpdate(resourceGroupName, contextName, {
+            location: LOCATION,
+            properties: { capabilities, hierarchies }
+        });
+    };
+    return await retryOperation(contextOperation);
+}
+
+async function manageAzureContext(client) {
+    try {
+        const existingCapabilities = await getExistingContext(client, CONTEXT_RESOURCE_GROUP, CONTEXT_NAME);
+        const newCapability = generateSingleRandomCapability();
+        const mergedCapabilities = mergeCapabilitiesWithUniqueness(existingCapabilities, [newCapability]);
+        const contextResult = await createOrUpdateContextWithHierarchies(client, CONTEXT_RESOURCE_GROUP, CONTEXT_NAME, mergedCapabilities);
+        console.log(`Context management completed successfully: ${contextResult.name}`);
+        return contextResult;
+    } catch (e) {
+        console.error(`Error in context management workflow: ${e.message}`);
+        throw e;
+    }
+}
+
+// --- Main Execution ---
 
 async function main() {
-  try {
-    await solutionTemplateCreateExactCliReplica();
-    console.log("\n=== SUCCESS ===");
-    console.log("Complete workload orchestration resources created successfully:");
-    console.log("• Schema: [Random schema name with semantic version]");
-    console.log("• Schema Version: [Random semantic version generated]");
-    console.log("• Solution Template Name: sdkexamples-solution");
-    console.log("• Solution Template Version: [Random semantic version generated]");
-    console.log("• Target Name: sdkbox-mk71");
-    console.log("• Resource Group: sdkexamples");
-    console.log("• Location: eastus2euap");
-    console.log("• Capabilities: [sdkexamples-soap] (consistent across solution template and target)");
-    console.log("• Description: This is Holtmelt Solution");
-    console.log("• Config: AppName: Hotmelt");
-    console.log("• Helm Chart: ghcr.io/eclipse-symphony/tests/helm/simple-chart:0.3.0");
-    console.log("• Target Type: helm.v3 with inCluster configuration");
-    
-    // Demonstrate semantic version generation
-    demonstrateSemanticVersions();
-  } catch (error) {
-    console.error("Error:", error.message);
-    if (error.name === "RestError") {
-      console.error("Status:", error.statusCode);
-      console.error("Code:", error.code);
-      if (error.response) {
+    try {
+        if (!SUBSCRIPTION_ID) throw new Error("AZURE_SUBSCRIPTION_ID environment variable not set.");
+        const credential = new DefaultAzureCredential();
+        await credential.getToken("https://management.azure.com/.default");
+        console.log("Successfully authenticated with Azure.");
+        
+        const workloadClient = new WorkloadOrchestrationManagementClient(credential, SUBSCRIPTION_ID);
+
+        // STEP 1: Manage Azure context
+        console.log("\n" + "=".repeat(50) + "\nSTEP 1: Managing Azure Context\n" + "=".repeat(50));
+        let capabilities = [];
         try {
-          const errorDetails = JSON.parse(error.response.bodyAsText);
-          console.error("Details:", JSON.stringify(errorDetails, null, 2));
-        } catch {
-          console.error("Response:", error.response.bodyAsText);
+            const contextResult = await manageAzureContext(workloadClient);
+            const contextCapabilities = contextResult.properties?.capabilities || [];
+            if (contextCapabilities.length > 0) {
+                const lastCap = contextCapabilities[contextCapabilities.length - 1];
+                if (lastCap.name) capabilities = [lastCap.name];
+            }
+        } catch (e) {
+            console.error(`Context management failed, generating fallback capability: ${e.message}`);
         }
-      }
+
+        if (capabilities.length === 0) {
+            const newCapability = generateSingleRandomCapability();
+            capabilities = [newCapability.name];
+            console.log(`Using generated fallback capability: ${capabilities[0]}`);
+        }
+        
+        console.log(`\n===> FINAL CAPABILITY FOR THIS RUN: ${capabilities[0]} \n`);
+        console.log("Waiting 30 seconds after capability selection...");
+        await sleep(30000);
+
+        // STEP 2: Create Resources
+        console.log("\n" + "=".repeat(50) + "\nSTEP 2: Creating Azure Resources\n" + "=".repeat(50));
+
+        const schema = await createSchema(workloadClient, RESOURCE_GROUP);
+        console.log(`Schema created successfully: ${schema.name}`);
+
+        const schemaVersion = await createSchemaVersion(workloadClient, RESOURCE_GROUP, schema.name);
+        console.log(`Schema version created successfully: ${schemaVersion.name}`);
+        
+        const solutionTemplate = await createSolutionTemplate(workloadClient, RESOURCE_GROUP, capabilities);
+        console.log(`Solution template created successfully: ${solutionTemplate.name}`);
+
+        const solutionTemplateVersionResult = await createSolutionTemplateVersion(workloadClient, RESOURCE_GROUP, solutionTemplate.name, schema.name, schemaVersion.name);
+        const solutionTemplateVersionId = solutionTemplateVersionResult.id;
+        if (!solutionTemplateVersionId) throw new Error("Failed to get ID from created solution template version.");
+        console.log(`Solution template version created successfully with ID: ${solutionTemplateVersionId}`);
+        
+        const target = await createTarget(workloadClient, RESOURCE_GROUP, capabilities);
+        console.log(`Target created successfully: ${target.name}`);
+
+        // STEP 3: Configuration API Call
+        console.log("\n" + "=".repeat(50) + "\nSTEP 3: Setting Configuration via API\n" + "=".repeat(50));
+        
+        try {
+            const configName = `${target.name}Config`;
+            const solutionName = "sdkexamples-solution1";
+            const configValues = { ErrorThreshold: 35.3, HealthCheckEndpoint: "http://localhost:8080/health", EnableLocalLog: true, AgentEndpoint: "http://localhost:8080/agent", HealthCheckEnabled: true, ApplicationEndpoint: "http://localhost:8080/app", TemperatureRangeMax: 100.5 };
+            
+            await createConfigurationApiCall(credential, SUBSCRIPTION_ID, RESOURCE_GROUP, configName, solutionName, configValues);
+            
+            console.log("\nVerifying configuration...");
+            await getConfigurationApiCall(credential, SUBSCRIPTION_ID, RESOURCE_GROUP, configName, solutionName);
+        } catch(e) {
+            console.warn(`Configuration API call failed, but continuing workflow: ${e.message}`);
+        }
+
+        // STEP 4: Review, Publish, and Install
+        console.log("\n" + "=".repeat(50) + "\nSTEP 4: Review, Publish, and Install\n" + "=".repeat(50));
+
+        const solutionVersionId = await reviewTarget(workloadClient, RESOURCE_GROUP, target.name, solutionTemplateVersionId);
+        await publishTarget(workloadClient, RESOURCE_GROUP, target.name, solutionVersionId);
+        await installTarget(workloadClient, RESOURCE_GROUP, target.name, solutionVersionId);
+        
+        console.log("\n" + "=".repeat(50) + "\nWorkflow finished successfully!\n" + "=".repeat(50));
+
+    } catch (e) {
+        console.error(`\nFATAL ERROR: An unexpected error occurred and stopped the workflow.`);
+        console.error(e.message);
+        if(e.stack) console.error(e.stack);
+        if(e.details) console.error("Error Details:", JSON.stringify(e.details, null, 2));
     }
-    throw error;
-  }
 }
 
-main().catch(console.error);
+main();
