@@ -42,16 +42,3 @@ Each language has its own detailed `README.md` with specific instructions for co
 - [Python README](./python/README.md)
 - [.NET README](./net/README.md)
 
-## Language-Specific Notes
-
-### JavaScript (Node.js)
-
-The `reviewTarget` operation is a Long-Running Operation (LRO) that is expected to return information about the newly created solution version. However, in the current SDK version, the final response from the LRO poller is sometimes not fully populated with the expected `reviewId` and `solutionVersionId`.
-
-To work around this, the JavaScript example implements the following logic:
-1. It initiates the `reviewSolutionVersion` operation.
-2. After the review is triggered, it calls `solutionVersions.listBySolution()` to get a complete list of all solution versions for the target.
-3. It then iterates through this list to find the version that matches the `solutionTemplateVersionId` used in the review step.
-4. By finding the correct version in the list, it can reliably extract the `reviewId` and the full `solutionVersionId` required for the subsequent `publish` and `install` steps.
-
-This ensures the workflow can proceed reliably even if the initial LRO response is incomplete.
