@@ -1,5 +1,5 @@
 # .NET folder (explicitly ignored as requested)
-net
+net/
 
 # Python
 __pycache__/
