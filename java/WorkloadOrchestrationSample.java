@@ -1,8 +1,5 @@
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.credential.TokenRequestContext;
-import com.azure.core.http.policy.HttpLogDetailLevel;
-import com.azure.core.http.policy.HttpLogOptions;
-import com.azure.core.http.policy.HttpLoggingPolicy;
 import com.azure.core.http.rest.PagedIterable;
 import com.azure.core.management.AzureEnvironment;
 import com.azure.core.management.exception.ManagementException;
@@ -67,7 +64,6 @@ public class WorkloadOrchestrationSample {
 
             WorkloadOrchestrationManager manager = WorkloadOrchestrationManager
                 .configure()
-                .withPolicy(new HttpLoggingPolicy(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS)))
                 .authenticate(credential, profile);
             System.out.println("Successfully authenticated with Azure.");
 

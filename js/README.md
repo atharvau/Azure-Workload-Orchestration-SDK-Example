@@ -1,241 +1,163 @@
 # Azure Workload Orchestration SDK - JavaScript Example
 
-This project demonstrates how to use the Azure Workload Orchestration SDK in JavaScript/Node.js to manage workload orchestration resources including schemas, solution templates, targets, and configurations.
+# Azure Workload Orchestration JavaScript SDK Example
 
-## Overview
+This Node.js application demonstrates an end-to-end workflow for using the Azure Workload Orchestration service. It utilizes the `@azure/arm-workloadorchestration` SDK to create and manage various Workload Orchestration resources, including contexts, schemas, solution templates, and targets.
 
-The Azure Workload Orchestration service helps manage and deploy applications across distributed edge environments. This sample demonstrates the complete workflow from creating schemas and solution templates to deploying and configuring solutions on targets.
+The application performs the following key operations:
+1.  **Context Management**: Fetches an existing Azure Context, adds a new randomly generated capability, and updates the context.
+2.  **Schema Creation**: Creates a new Schema and a corresponding Schema Version.
+3.  **Solution Template**: Creates a Solution Template and a version for it, linking it to the created schema.
+4.  **Target Creation**: Deploys a Target resource.
+5.  **Configuration**: Sets configuration values for the target by making a direct REST API call using `axios`.
+6.  **Deployment Workflow**: Reviews, publishes, and installs the solution on the target.
 
 ## Prerequisites
 
-- Node.js (version 14 or higher)
-- npm or yarn package manager
-- Azure subscription with appropriate permissions
-- Azure CLI (for authentication setup)
+- Node.js (version 14 or later)
+- npm (Node Package Manager)
+- An active Azure Subscription.
+- Azure credentials configured for authentication. The application uses `DefaultAzureCredential`, which supports multiple authentication methods. The recommended approach is to set the following environment variables:
+  - `AZURE_CLIENT_ID`: Your application's client ID.
+  - `AZURE_TENANT_ID`: Your Azure Active Directory tenant ID.
+  - `AZURE_CLIENT_SECRET`: Your application's client secret.
+  - `AZURE_SUBSCRIPTION_ID`: Your Azure Subscription ID.
 
-## Installation
-
-1. Clone the repository and navigate to the JavaScript directory:
-```bash
-cd js
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-## Required Dependencies
-
-The project uses the following key dependencies:
-
-- `@azure/arm-workloadorchestration` - Azure Workload Orchestration SDK
-- `@azure/identity` - Azure authentication
-- `dotenv` - Environment variable management
-- `axios` - HTTP client for REST API calls
+  Alternatively, you can authenticate by logging in via Azure CLI (`az login`).
 
 ## Configuration
 
-### Default Configuration
+The application is configured via environment variables. You can create a `.env` file in the `js` directory to store these values. The most important variable is `AZURE_SUBSCRIPTION_ID`.
 
-The script uses the following default configuration (can be modified in `main.js`):
-
-```javascript
-const LOCATION = "eastus2euap";
-const RESOURCE_GROUP = "sdkexamples";
-const CONTEXT_RESOURCE_GROUP = "Mehoopany";
-const CONTEXT_NAME = "Mehoopany-Context";
-const SINGLE_CAPABILITY_NAME = "sdkexamples-soap";
+**Example `.env` file:**
+```
+AZURE_SUBSCRIPTION_ID="your-subscription-id"
+AZURE_CLIENT_ID="your-client-id"
+AZURE_TENANT_ID="your-tenant-id"
+AZURE_CLIENT_SECRET="your-client-secret"
 ```
 
-## Authentication
+If `AZURE_SUBSCRIPTION_ID` is not set, the script will fall back to the hardcoded value in `main.js`.
 
-The sample supports multiple authentication methods through `DefaultAzureCredential`:
+## How to Run
 
-1. **Environment variables** (recommended for automation)
-2. **Azure CLI** (for local development)
-3. **Managed Identity** (for Azure-hosted applications)
-4. **Visual Studio Code** (for local development)
+1.  **Navigate to the directory**:
+    ```sh
+    cd js
+    ```
 
-### Setting up Azure CLI Authentication
+2.  **Install dependencies**:
+    This command will download the necessary packages defined in `package.json`.
+    ```sh
+    npm install
+    ```
 
-```bash
-az login
-az account set --subscription "your-subscription-id"
-```
+3.  **Run the application**:
+    ```sh
+    node main.js
+    ```
 
-## Usage
+## Sample Output
 
-Run the complete workflow:
-
-```bash
-node main.js
-```
-
-## Workflow Steps
-
-The sample demonstrates a complete end-to-end workflow:
-
-### 1. Context Management
-- Fetches or creates an Azure context with capabilities
-- Generates random capabilities for demonstration
-- Manages capability hierarchies (country, region, factory, line)
-
-### 2. Resource Creation
-- **Schema Creation**: Creates a configuration schema with validation rules
-- **Schema Version**: Creates a specific version of the schema
-- **Solution Template**: Creates a reusable solution template
-- **Solution Template Version**: Creates a versioned instance with Helm specifications
-- **Target Creation**: Creates a deployment target with extended location
-
-### 3. Configuration Management
-- Uses REST API calls to set dynamic configurations
-- Validates configuration values against the schema
-- Supports various data types (float, string, boolean)
-
-### 4. Deployment Workflow
-- **Review**: Validates the solution template against the target
-- **Publish**: Makes the solution version available for deployment
-- **Install**: Deploys the solution to the target
-
-## Key Features
-
-### Retry Logic
-The sample includes robust retry logic with exponential backoff:
-
-```javascript
-async function retryOperation(operation, maxAttempts = 3, delaySeconds = 30) {
-    // Implements exponential backoff retry pattern
-}
-```
-
-### Random Version Generation
-Generates semantic versions for resources:
-
-```javascript
-function generateRandomSemanticVersion(includePrerelease = false, includeBuild = false) {
-    // Generates versions like "2.15.43" or "1.0.0-alpha.5"
-}
-```
-
-### Configuration Schema
-Example schema with multiple data types:
-
-```yaml
-rules:
-  configs:
-    ErrorThreshold: { type: float, required: true, editableAt: [line], editableBy: [OT] }
-    HealthCheckEndpoint: { type: string, required: false, editableAt: [line], editableBy: [OT] }
-    EnableLocalLog: { type: boolean, required: true, editableAt: [line], editableBy: [OT] }
-    AgentEndpoint: { type: string, required: true, editableAt: [line], editableBy: [OT] }
-    HealthCheckEnabled: { type: boolean, required: false, editableAt: [line], editableBy: [OT] }
-    ApplicationEndpoint: { type: string, required: true, editableAt: [line], editableBy: [OT] }
-    TemperatureRangeMax: { type: float, required: true, editableAt: [line], editableBy: [OT] }
-```
-
-### Helm Integration
-The sample includes Helm chart deployment specifications:
-
-```javascript
-specification: {
-    components: [{
-        name: "helmcomponent",
-        type: "helm.v3",
-        properties: { 
-            chart: { 
-                repo: "ghcr.io/eclipse-symphony/tests/helm/simple-chart", 
-                version: "0.3.0", 
-                wait: true, 
-                timeout: "5m" 
-            } 
-        }
-    }]
-}
-```
-
-## Error Handling
-
-The sample includes comprehensive error handling:
-
-- **Retry mechanisms** for transient failures
-- **Graceful degradation** when optional operations fail
-- **Detailed error logging** with stack traces
-- **Fallback strategies** for capability generation
-
-## API Documentation
-
-### Core Functions
-
-#### `createSchema(client, resourceGroupName)`
-Creates a new configuration schema with random versioning.
-
-#### `createSchemaVersion(client, resourceGroupName, schemaName)`
-Creates a versioned instance of a schema with validation rules.
-
-#### `createSolutionTemplate(client, resourceGroupName, capabilities)`
-Creates a reusable solution template with specified capabilities.
-
-#### `createSolutionTemplateVersion(client, resourceGroupName, solutionTemplateName, schemaName, schemaVersion)`
-Creates a versioned solution template with Helm specifications.
-
-#### `createTarget(client, resourceGroupName, capabilities)`
-Creates a deployment target with extended location support.
-
-#### `reviewTarget(client, resourceGroupName, targetName, solutionTemplateVersionId)`
-Reviews and validates a solution template against a target.
-
-#### `publishTarget(client, resourceGroupName, targetName, solutionVersionId)`
-Publishes a solution version for deployment.
-
-#### `installTarget(client, resourceGroupName, targetName, solutionVersionId)`
-Installs a solution on the specified target.
-
-### Configuration API Functions
-
-#### `createConfigurationApiCall(credential, subscriptionId, resourceGroup, configName, solutionName, configValues)`
-Creates dynamic configuration using REST API calls.
-
-#### `getConfigurationApiCall(credential, subscriptionId, resourceGroup, configName, solutionName)`
-Retrieves configuration values for verification.
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Authentication Failures**
-   - Verify Azure CLI login: `az account show`
-   - Check environment variables are correctly set
-   - Ensure proper permissions in Azure subscription
-
-2. **Resource Group Not Found**
-   - Create resource groups before running the sample
-   - Verify resource group names in configuration
-
-3. **Extended Location Errors**
-   - Ensure the custom location exists and is accessible
-   - Check the extended location path format
-
-4. **Configuration API Failures**
-   - These are often expected and the sample continues gracefully
-   - Check Azure region support for configuration APIs
-
-## Output Example
-
-The sample produces detailed console output showing each step:
+Below is a sample output from a successful run of the application.
 
 ```
+PS C:\Users\audapure\Projects\ConfigManager\SDK\sdktester\js> node .\main.js
+Successfully authenticated with Azure.
+
 ==================================================
 STEP 1: Managing Azure Context
 ==================================================
 DEBUG: Fetching existing context: Mehoopany-Context
-DEBUG: Found 5 existing capabilities.
-DEBUG: Generated single random capability: sdkexamples-soap-7432
+DEBUG: Found 372 existing capabilities.
+DEBUG: Generated single random capability: sdkexamples-soap-7773
+Capability merge complete. Total unique capabilities: 373
+Creating/updating context 'Mehoopany-Context'...
+Context management completed successfully: Mehoopany-Context
 
-===> FINAL CAPABILITY FOR THIS RUN: sdkexamples-soap-7432 
+===> FINAL CAPABILITY FOR THIS RUN: sdkexamples-soap-7773
+
+Waiting 30 seconds after capability selection...
 
 ==================================================
 STEP 2: Creating Azure Resources
 ==================================================
-Creating schema 'sdkexamples-schema-v3.12.67'...
-Schema created successfully: sdkexamples-schema-v3.12.67
-...
+Creating schema 'sdkexamples-schema-v9.16.82'...
+Schema created successfully: sdkexamples-schema-v9.16.82
+Creating schema version '0.0.82' for schema 'sdkexamples-schema-v9.16.82'...
+Schema version created successfully: 0.0.82
+Creating solution template 'sdkexamples-solution1'...
+Solution template created successfully: sdkexamples-solution1
+Creating solution template version '6.1.9'...
+Solution template version created successfully with ID: /subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/solutionTemplates/sdkexamples-solution1/versions/6.1.9
+Creating target 'sdkbox-m23'...
+Target created successfully: sdkbox-m23
+
+==================================================
+STEP 3: Setting Configuration via API
+==================================================
+Making PUT call to Configuration API...
+Configuration API PUT call successful. Status: 200
+
+Verifying configuration...
+Making GET call to Configuration API: https://management.azure.com/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/configurations/sdkbox-m23Config/DynamicConfigurations/sdkexamples-solution1/versions/version1?api-version=2024-06-01-preview
+Configuration GET call successful. Status: 200
+Retrieved Configuration Data: {
+  "id": "/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/configurations/sdkbox-m23Config/DynamicConfigurations/sdkexamples-solution1/versions/version1",
+  "name": "version1",
+  "type": "microsoft.edge/configurations/dynamicconfigurations/versions",
+  "systemData": {
+    "createdBy": "cba491bc-48c0-44a6-a6c7-23362a7f54a9",
+    "createdByType": "Application",
+    "createdAt": "2025-09-11T03:54:39.3730928Z",
+    "lastModifiedBy": "audapure@microsoft.com",
+    "lastModifiedByType": "User",
+    "lastModifiedAt": "2025-09-26T04:22:33.548318Z"
+  },
+  "properties": {
+    "values": "ErrorThreshold: 35.3
+HealthCheckEndpoint: http://localhost:8080/health
+EnableLocalLog: true
+AgentEndpoint: http://localhost:8080/agent
+HealthCheckEnabled: true
+ApplicationEndpoint: http://localhost:8080/app
+TemperatureRangeMax: 100.5
+",
+    "provisioningState": "Succeeded"
+  }
+}
+
+==================================================
+STEP 4: Review, Publish, and Install
+==================================================
+Starting review for target sdkbox-m23 with template version ID: /subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/solutionTemplates/sdkexamples-solution1/versions/6.1.9
+Listing all solution versions for solution 'sdkexamples-solution1' on target 'sdkbox-m23'...
+------------------------------------
+Found matching solution version: sdkbox-m23-6.1.9.1
+  Extracted Review ID: 1a1be17a-a0c2-433f-9b8c-c09146f41ed4
+  Revision: undefined
+  State: InReview
+Returning ID for further steps: /subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/targets/sdkbox-m23/solutions/sdkexamples-solution1/versions/sdkbox-m23-6.1.9.1
+Publishing solution version to target sdkbox-m23...
+Publish operation completed successfully.
+Installing solution on target sdkbox-m23...
+Install operation completed for target sdkbox-m23.
+
+==================================================
+Workflow finished successfully!
+==================================================
+```
+
+## Language-Specific Notes
+
+### LRO Response Workaround for `reviewTarget`
+
+The `reviewTarget` operation is a Long-Running Operation (LRO) that is expected to return information about the newly created solution version. However, in the current SDK version, the final response from the LRO poller is sometimes not fully populated with the expected `reviewId` and `solutionVersionId`.
+
+To work around this, this example implements the following logic:
+1. It initiates the `reviewSolutionVersion` operation.
+2. After the review is triggered, it calls `solutionVersions.listBySolution()` to get a complete list of all solution versions for the target.
+3. It then iterates through this list to find the version that matches the `solutionTemplateVersionId` used in the review step.
+4. By finding the correct version in the list, it can reliably extract the full `solutionVersionId` required for the subsequent `publish` and `install` steps.
+
+This ensures the workflow can proceed reliably even if the initial LRO response is incomplete. For more details, see the related GitHub Issue: [Issue #XXXX](https://github.com/Azure/azure-sdk-for-js/issues/XXXX).

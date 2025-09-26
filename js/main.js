@@ -196,13 +196,7 @@ async function reviewTarget(client, resourceGroupName, targetName, solutionTempl
     const solutionVersionList = [];
     for await (const version of solutionVersions) {
         solutionVersionList.push(version);
-        console.log("------------------------------------");
-        console.log(`Found Solution Version: ${version.name}`);
-        console.log(`  ID: ${version.id}`);
         if (version.properties) {
-            console.log(`  State: ${version.properties.state}`);
-            console.log(`  Provisioning State: ${version.properties.provisioningState}`);
-            console.log(`  Template Version ID: ${version.properties.solutionTemplateVersionId}`);
         }
     }
     console.log("------------------------------------");
@@ -215,7 +209,7 @@ async function reviewTarget(client, resourceGroupName, targetName, solutionTempl
     if (matchingVersion) {
         console.log(`Found matching solution version: ${matchingVersion.name}`);
         console.log(`  Extracted Review ID: ${matchingVersion.properties.reviewId}`);
-        console.log(`  Revision: ${matchingVersion.properties.revision}`);
+        console.log(`  Revision: ${matchingVersion.properties.revisionId}`);
         console.log(`  State: ${matchingVersion.properties.state}`);
         
         // Return the full ID of the solution version for publish/install

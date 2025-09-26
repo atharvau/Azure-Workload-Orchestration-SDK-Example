@@ -639,11 +639,6 @@ func getExistingContext(ctx context.Context, client *armworkloadorchestration.Co
 		}
 	}
 
-	fmt.Printf("DEBUG: Found %d existing capabilities\n", len(existingCapabilities))
-	for i, cap := range existingCapabilities {
-		fmt.Printf("  [%d] Name: %s, Description: %s\n", i, cap.Name, cap.Description)
-	}
-
 	return existingCapabilities, nil
 }
 
@@ -665,28 +660,16 @@ func generateSingleRandomCapability() Capability {
 // mergeCapabilitiesWithUniqueness merges capabilities ensuring no duplicates by name
 func mergeCapabilitiesWithUniqueness(existingCapabilities, newCapabilities []Capability) []Capability {
 	fmt.Println(strings.Repeat("=", 60))
-	fmt.Println("DEBUGGING CAPABILITY MERGE PROCESS")
+	fmt.Println("CAPABILITY MERGE PROCESS")
 	fmt.Println(strings.Repeat("=", 60))
-
-	fmt.Printf("DEBUG: EXISTING CAPABILITIES - Count: %d\n", len(existingCapabilities))
-	for i, cap := range existingCapabilities {
-		fmt.Printf("  EXISTING[%d]: Name: %s, Description: %s\n", i, cap.Name, cap.Description)
-	}
-
-	fmt.Printf("\nDEBUG: NEW CAPABILITIES - Count: %d\n", len(newCapabilities))
-	for i, cap := range newCapabilities {
-		fmt.Printf("  NEW[%d]: Name: %s, Description: %s\n", i, cap.Name, cap.Description)
-	}
 
 	existingNames := make(map[string]bool)
 	var mergedCapabilities []Capability
 
-	fmt.Printf("\nDEBUG: PROCESSING EXISTING CAPABILITIES...\n")
 	for i, cap := range existingCapabilities {
 		if cap.Name != "" && !existingNames[cap.Name] {
 			existingNames[cap.Name] = true
 			mergedCapabilities = append(mergedCapabilities, cap)
-			fmt.Printf("  ADDED EXISTING[%d]: %s\n", i, cap.Name)
 		} else {
 			fmt.Printf("  SKIPPED EXISTING[%d]: %s (duplicate or empty)\n", i, cap.Name)
 		}
@@ -735,7 +718,6 @@ func saveCapabilitiesToJSON(capabilities []Capability, filename string) error {
 func createOrUpdateContextWithHierarchies(ctx context.Context, client *armworkloadorchestration.ContextsClient, resourceGroupName, contextName string, capabilities []Capability) (*armworkloadorchestration.Context, error) {
 	contextOperation := func() error {
 		// Convert capabilities to string pointers with validation
-		fmt.Printf("Converting %d capabilities to string pointers...\n", len(capabilities))
 		capabilityPtrs := make([]*string, len(capabilities))
 		for i, cap := range capabilities {
 			if cap.Name == "" {
@@ -743,7 +725,6 @@ func createOrUpdateContextWithHierarchies(ctx context.Context, client *armworklo
 				continue
 			}
 			capabilityPtrs[i] = to.Ptr(cap.Name)
-			fmt.Printf("Converted capability: %s\n", cap.Name)
 		}
 
 		// Create capability objects with name and description

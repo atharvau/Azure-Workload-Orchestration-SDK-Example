@@ -405,16 +405,10 @@ def create_configuration_api_call(credential, subscription_id, resource_group, c
         # Construct the API URL with correct API version (matching CLI format)
         url = f"https://management.azure.com/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Edge/configurations/{config_name}/DynamicConfigurations/{solution_name}/versions/version1?api-version=2024-06-01-preview"
         
-        print("\nDebug: Request URL:")
-        print(url)
-        
         headers = {
             "Authorization": f"Bearer {bearer_token}",
             "Content-Type": "application/json"
         }
-        print("\nDebug: Request Headers:")
-        print(f"- Content-Type: {headers['Content-Type']}")
-        print("- Authorization: Bearer [token-hidden]")
         
         # Build values string from config_values dictionary matching CLI format
         values_lines = []
@@ -439,28 +433,12 @@ def create_configuration_api_call(credential, subscription_id, resource_group, c
             }
         }
         
-        print(f"Making PUT call to Configuration API: {url}")
-        print(f"Request body: {json.dumps(request_body, indent=2)}")
+        print(f"Making PUT call to Configuration API")
         
         response = requests.put(url, headers=headers, json=request_body)
         
-        print("\nDebug: Response Details:")
-        print(f"- Status Code: {response.status_code}")
-        print("- Response Headers:")
-        for key, value in response.headers.items():
-            print(f"  {key}: {value}")
-        
-        try:
-            response_json = response.json()
-            print("\nDebug: Response Body (JSON):")
-            print(json.dumps(response_json, indent=2))
-        except json.JSONDecodeError:
-            print("\nDebug: Response Body (Raw):")
-            print(response.text)
-        
         if response.status_code in [200, 201, 202]:
             print(f"Configuration API call successful. Status: {response.status_code}")
-            print(f"Response: {response.text}")
             return response
         else:
             print(f"Configuration API call failed. Status: {response.status_code}")
@@ -488,23 +466,19 @@ def get_configuration_api_call(credential, subscription_id, resource_group, conf
             "Content-Type": "application/json"
         }
         
-        print(f"Making GET call to Configuration API: {url}")
+        print(f"Making GET call to Configuration API")
         
         response = requests.get(url, headers=headers)
         
         if response.status_code in [200]:
             print(f"Configuration GET API call successful. Status: {response.status_code}")
-            print(f"Retrieved Configuration Response: {response.text}")
             
-            # Try to parse and pretty print the JSON response
+            # Try to parse and display the configuration values
             try:
                 response_json = response.json()
-                print("Parsed Configuration Data:")
-                print(json.dumps(response_json, indent=2))
-                
                 # Extract and display the actual values if they exist
                 if 'properties' in response_json and 'values' in response_json['properties']:
-                    print(f"Configuration Values: {response_json['properties']['values']}")
+                    print(f"Configuration Values retrieved")
                     
             except json.JSONDecodeError:
                 print("Response is not valid JSON")
@@ -512,7 +486,6 @@ def get_configuration_api_call(credential, subscription_id, resource_group, conf
             return response
         else:
             print(f"Configuration GET API call failed. Status: {response.status_code}")
-            print(f"Response: {response.text}")
             # Don't raise exception for GET failures as it might be expected
             return None
             
@@ -525,7 +498,7 @@ def get_existing_context(client, resource_group_name, context_name):
     Fetch existing Azure context and return its capabilities
     """
     try:
-        print(f"DEBUG: Fetching existing context: {context_name}")
+        print(f"Fetching existing context: {context_name}")
         context = client.contexts.get(
             resource_group_name=resource_group_name,
             context_name=context_name
@@ -535,31 +508,18 @@ def get_existing_context(client, resource_group_name, context_name):
         if hasattr(context, 'properties') and hasattr(context.properties, 'capabilities'):
             existing_capabilities = context.properties.capabilities
         
-        print(f"DEBUG: Found {len(existing_capabilities)} existing capabilities")
-        if existing_capabilities:
-            print("DEBUG: Existing capabilities details:")
-            for i, cap in enumerate(existing_capabilities):
-                print(f"  [{i}] Type: {type(cap)}")
-                if isinstance(cap, dict):
-                    print(f"      Name: {cap.get('name', 'N/A')}")
-                    print(f"      Description: {cap.get('description', 'N/A')}")
-                    print(f"      State: {cap.get('state', 'N/A')}")
-                else:
-                    print(f"      Name: {getattr(cap, 'name', 'N/A')}")
-                    print(f"      Description: {getattr(cap, 'description', 'N/A')}")
-                    print(f"      State: {getattr(cap, 'state', 'N/A')}")
-        
+        print(f"Found {len(existing_capabilities)} existing capabilities")
         return existing_capabilities
         
     except HttpResponseError as e:
         if e.status_code == 404:
-            print("DEBUG: Context not found, will create new one")
+            print("Context not found, will create new one")
             return []
         else:
-            print(f"DEBUG: Error fetching context: {e}")
+            print(f"Error fetching context: {e}")
             raise
     except Exception as e:
-        print(f"DEBUG: Error fetching context: {e}")
+        print(f"Error fetching context: {e}")
         return []
 
 def generate_single_random_capability():
@@ -575,52 +535,20 @@ def generate_single_random_capability():
         "description": f"SDK generated {cap_type} manufacturing capability"
     }
     
-    print(f"DEBUG: Generated single random capability: {capability['name']}")
+    print(f"Generated single random capability: {capability['name']}")
     return capability
 
 def merge_capabilities_with_uniqueness(existing_capabilities, new_capabilities):
     """
-    Merge capabilities ensuring no duplicates by name with comprehensive debugging
+    Merge capabilities ensuring no duplicates by name
     """
-    print("=" * 60)
-    print("DEBUGGING CAPABILITY MERGE PROCESS")
-    print("=" * 60)
-    
-    # Debug: Show what's coming in
-    print(f"DEBUG: EXISTING CAPABILITIES - Count: {len(existing_capabilities)}")
-    if existing_capabilities:
-        for i, cap in enumerate(existing_capabilities):
-            print(f"  EXISTING[{i}]:")
-            print(f"    Type: {type(cap)}")
-            if isinstance(cap, dict):
-                print(f"    Name: {cap.get('name', 'N/A')}")
-                print(f"    Description: {cap.get('description', 'N/A')}")
-                print(f"    Has State: {'state' in cap}")
-            else:
-                print(f"    Name: {getattr(cap, 'name', 'N/A')}")
-                print(f"    Description: {getattr(cap, 'description', 'N/A')}")
-                print(f"    Has State: {hasattr(cap, 'state')}")
-    
-    print(f"\nDEBUG: NEW CAPABILITIES - Count: {len(new_capabilities)}")
-    if new_capabilities:
-        for i, cap in enumerate(new_capabilities):
-            print(f"  NEW[{i}]:")
-            print(f"    Type: {type(cap)}")
-            if isinstance(cap, dict):
-                print(f"    Name: {cap.get('name', 'N/A')}")
-                print(f"    Description: {cap.get('description', 'N/A')}")
-                print(f"    Has State: {'state' in cap}")
-            else:
-                print(f"    Name: {getattr(cap, 'name', 'N/A')}")
-                print(f"    Description: {getattr(cap, 'description', 'N/A')}")
-                print(f"    Has State: {hasattr(cap, 'state')}")
+    print(f"Merging capabilities: {len(existing_capabilities)} existing + {len(new_capabilities)} new")
     
     # Process existing capabilities
     existing_names = set()
     merged_capabilities = []
     
-    print(f"\nDEBUG: PROCESSING EXISTING CAPABILITIES...")
-    for i, cap in enumerate(existing_capabilities):
+    for cap in existing_capabilities:
         if isinstance(cap, dict):
             cap_name = cap.get('name', '')
             cap_desc = cap.get('description', '')
@@ -636,13 +564,9 @@ def merge_capabilities_with_uniqueness(existing_capabilities, new_capabilities):
                 "description": cap_desc
             }
             merged_capabilities.append(capability_dict)
-            print(f"  ADDED EXISTING[{i}]: {cap_name}")
-        else:
-            print(f"  SKIPPED EXISTING[{i}]: {cap_name} (duplicate or empty)")
     
-    print(f"\nDEBUG: PROCESSING NEW CAPABILITIES...")
     # Process new capabilities
-    for i, cap in enumerate(new_capabilities):
+    for cap in new_capabilities:
         cap_name = cap.get('name', '') if isinstance(cap, dict) else getattr(cap, 'name', '')
         
         if cap_name not in existing_names:
@@ -653,38 +577,20 @@ def merge_capabilities_with_uniqueness(existing_capabilities, new_capabilities):
                 "description": cap.get('description', '') if isinstance(cap, dict) else getattr(cap, 'description', '')
             }
             merged_capabilities.append(capability_dict)
-            print(f"  ADDED NEW[{i}]: {cap_name}")
-        else:
-            print(f"  REJECTED NEW[{i}]: {cap_name} (DUPLICATE - overriding avoided!)")
-    
-    print(f"\nDEBUG: MERGE RESULTS VALIDATION")
-    print(f"  Initial existing count: {len(existing_capabilities)}")
-    print(f"  New capabilities count: {len(new_capabilities)}")
-    print(f"  Final merged count: {len(merged_capabilities)}")
-    print(f"  Unique names count: {len(existing_names)}")
     
     # Validation check
     expected_max = len(existing_capabilities) + len(new_capabilities)
     if len(merged_capabilities) > expected_max:
-        print(f"ERROR: Merged count ({len(merged_capabilities)}) exceeds maximum expected ({expected_max})")
-        print("STOPPING EXECUTION - CAPABILITY MERGE VALIDATION FAILED")
         raise ValueError(f"Capability merge validation failed: count {len(merged_capabilities)} > {expected_max}")
     
     # Final validation: ensure all merged capabilities have required fields
-    print(f"\nDEBUG: FINAL CAPABILITY VALIDATION")
-    for i, cap in enumerate(merged_capabilities):
+    for cap in merged_capabilities:
         if not isinstance(cap, dict):
-            print(f"ERROR: Capability[{i}] is not dict: {type(cap)}")
-            raise ValueError(f"Invalid capability format at index {i}")
+            raise ValueError(f"Invalid capability format: {type(cap)}")
         if not cap.get('name'):
-            print(f"ERROR: Capability[{i}] missing name: {cap}")
-            raise ValueError(f"Capability missing name at index {i}")
-        if 'state' in cap:
-            print(f"WARNING: Capability[{i}] contains deprecated 'state' field: {cap['name']}")
+            raise ValueError(f"Capability missing name: {cap}")
     
-    print(f"VALIDATION PASSED - Proceeding with {len(merged_capabilities)} capabilities")
-    print("=" * 60)
-    
+    print(f"Capability merge completed: {len(merged_capabilities)} total capabilities")
     return merged_capabilities
 
 def save_capabilities_to_json(capabilities, filename="context-capabilities.json"):
@@ -822,39 +728,31 @@ def main():
             
             # Extract the NEWLY ADDED capability from context for use in all resources
             capabilities = None
-            print(f"DEBUG: Extracting capability from context result...")
+            print(f"Extracting capability from context result...")
             
             if hasattr(context_result, 'properties') and hasattr(context_result.properties, 'capabilities'):
                 context_capabilities = context_result.properties.capabilities
-                print(f"DEBUG: Found {len(context_capabilities)} capabilities in context")
+                print(f"Found {len(context_capabilities)} capabilities in context")
                 
                 if context_capabilities:
                     # Get the LAST capability (which should be the newly added one)
                     last_cap = context_capabilities[-1]
-                    print(f"DEBUG: Last capability type: {type(last_cap)}")
-                    print(f"DEBUG: Last capability data: {last_cap}")
                     
                     cap_name = last_cap.get('name', '') if isinstance(last_cap, dict) else getattr(last_cap, 'name', '')
                     if cap_name:
                         capabilities = [cap_name]
-                        print(f"SELECTED CAPABILITY FOR ALL RESOURCES: {capabilities[0]}")
-                        print(f"DEBUG: This capability will be used consistently across:")
-                        print(f"  - Solution Template")
-                        print(f"  - Target")
-                        print(f"  - All other resource operations")
-                    else:
-                        print("DEBUG: Could not extract capability name from last capability")
+                        print(f"Selected capability for all resources: {capabilities[0]}")
                 else:
-                    print("DEBUG: No capabilities found in context")
+                    print("No capabilities found in context")
             else:
-                print("DEBUG: Context result has no capabilities property")
+                print("Context result has no capabilities property")
             
             if not capabilities:
                 # Generate a single random capability if none found in context
-                print("DEBUG: No valid capability found, generating new one...")
+                print("No valid capability found, generating new one...")
                 new_capability = generate_single_random_capability()
                 capabilities = [new_capability['name']]
-                print(f"GENERATED NEW CAPABILITY FOR ALL RESOURCES: {capabilities[0]}")
+                print(f"Generated new capability for all resources: {capabilities[0]}")
         except Exception as e:
             print(f"Context management failed, generating new random capability: {e}")
             new_capability = generate_single_random_capability()

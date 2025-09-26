@@ -1,213 +1,216 @@
-# Azure Workload Orchestration SDK - Go Implementation
+# Azure Workload Orchestration Go SDK Example
 
-This implementation demonstrates the usage of Azure Workload Orchestration SDK in Go, providing functionality for schema management, solution templates, and target operations.
+This Go application demonstrates an end-to-end workflow for using the Azure Workload Orchestration service. It utilizes the `azure-sdk-for-go` to create and manage various Workload Orchestration resources, including contexts, schemas, solution templates, and targets.
+
+The application performs the following key operations:
+1.  **Context Management**: Fetches an existing Azure Context, adds a new randomly generated capability, and updates the context.
+2.  **Schema Creation**: Creates a new Schema and a corresponding Schema Version.
+3.  **Solution Template**: Creates a Solution Template and a version for it, linking it to the created schema.
+4.  **Target Creation**: Deploys a Target resource.
+5.  **Configuration**: Sets configuration values for the target by making a direct REST API call.
+6.  **Deployment Workflow**: Reviews, publishes, and installs the solution on the target.
 
 ## Prerequisites
 
-- Go 1.18+
-- Azure subscription
-- Azure CLI installed and authenticated
+- Go (version 1.18 or later)
+- An active Azure Subscription.
+- Azure credentials configured for authentication. The application uses `azidentity.NewDefaultAzureCredential`, which supports multiple authentication methods. The recommended approach is to set the following environment variables:
+  - `AZURE_CLIENT_ID`: Your application's client ID.
+  - `AZURE_TENANT_ID`: Your Azure Active Directory tenant ID.
+  - `AZURE_CLIENT_SECRET`: Your application's client secret.
 
-## Project Structure
-
-```
-golang/
-├── main.go              # Main application entry point
-├── go.mod              # Go module definition
-├── go.sum              # Module dependency checksums
-├── version.txt         # SDK version information
-└── README.md           # This documentation
-```
-
-## Features
-
-- Azure Workload Orchestration SDK integration using `azure-sdk-for-go`
-- Schema creation and management
-- Schema version control
-- Solution template management
-- Target operations
-- Error handling with retries
-- Comprehensive logging
-- Strong type safety and compile-time checks
-- Concurrent operation support
-- Resource cleanup management
-
-## Setup and Installation
-
-1. **Install Dependencies**
-   ```bash
-   go mod download
-   ```
-
-   Or let Go automatically install them:
-   ```bash
-   go get github.com/Azure/azure-sdk-for-go/sdk/azidentity
-   go get github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/workloadorchestration/armworkloadorchestration
-   ```
+  Alternatively, you can authenticate by logging in via Azure CLI (`az login`).
 
 ## Configuration
 
-Update these values in your code or configuration:
+Before running the application, you must update the hardcoded constants in `main.go` to match your Azure environment:
+
 ```go
 const (
-    subscriptionID = "your-subscription-id"
-    resourceGroup  = "your-resource-group"
-    location       = "eastus"
+	LOCATION               = "eastus2euap"
+	SUBSCRIPTION_ID        = "YOUR_SUBSCRIPTION_ID" // Replace with your Subscription ID
+	RESOURCE_GROUP         = "sdkexamples"
+	CONTEXT_RESOURCE_GROUP = "Mehoopany"
+	CONTEXT_NAME           = "Mehoopany-Context"
+	SINGLE_CAPABILITY_NAME = "sdkexamples-soap"
 )
 ```
 
-## Usage Examples
+## How to Run
 
-### Basic Authentication and Client Setup
+1.  **Navigate to the directory**:
+    ```sh
+    cd golang
+    ```
 
-```go
-import (
-    "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-    "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/workloadorchestration/armworkloadorchestration"
-)
+2.  **Install dependencies**:
+    This command will download the necessary Azure SDK modules defined in `go.mod`.
+    ```sh
+    go mod tidy
+    ```
 
-func main() {
-    cred, err := azidentity.NewDefaultAzureCredential(nil)
-    if err != nil {
-        log.Fatalf("Authentication failed: %v", err)
-    }
+3.  **Run the application**:
+    ```sh
+    go run main.go
+    ```
 
-    client, err := armworkloadorchestration.NewClient(subscriptionID, cred, nil)
-    if err != nil {
-        log.Fatalf("Failed to create client: %v", err)
-    }
+## Sample Output
+
+Below is a sample output from a successful run of the application.
+
+```
+PS C:\Users\audapure\Projects\ConfigManager\SDK\sdktester\golang> go run main.go
+Starting Go workload orchestration application...
+Successfully authenticated using environment variables.
+Testing credential by requesting a token...
+Successfully obtained token
+Successfully authenticated with Azure.
+==================================================
+STEP 1: Managing Azure Context with Random Capabilities
+==================================================
+DEBUG: Fetching existing context: Mehoopany-Context
+DEBUG: Generated single random capability: sdkexamples-soap-1182
+============================================================
+CAPABILITY MERGE PROCESS
+============================================================
+
+DEBUG: PROCESSING NEW CAPABILITIES...
+  ADDED NEW[0]: sdkexamples-soap-1182
+
+DEBUG: MERGE RESULTS VALIDATION
+  Initial existing count: 368
+  New capabilities count: 1
+  Final merged count: 369
+  Unique names count: 369
+VALIDATION PASSED - Proceeding with 369 capabilities
+============================================================
+Capabilities saved to context-capabilities.json
+Creating/updating context: Mehoopany-Context
+Context management completed successfully: Mehoopany-Context
+Waiting 30 seconds for context propagation...
+Verifying capability in context...
+DEBUG: Extracting capability from context result...
+DEBUG: Found 369 capabilities in context
+SELECTED CAPABILITY FOR ALL RESOURCES: sdkexamples-soap-1182
+DEBUG: This capability will be used consistently across:
+  - Solution Template
+  - Target
+  - All other resource operations
+
+FINAL CAPABILITY SELECTION: sdkexamples-soap-1182
+Verifying capability exists in context...
+Capability sdkexamples-soap-1182 verified in context
+============================================================
+==================================================
+STEP 2: Creating Azure Resources
+==================================================
+Creating schema in resource group: sdkexamples
+Schema created successfully: sdkexamples-schema-v2.12.13
+Creating schema version for schema: sdkexamples-schema-v2.12.13
+Schema version created successfully: 8.1.27
+Proceeding with solution template and target creation...
+Creating solution template in resource group: sdkexamples
+Solution template created successfully: sdkexamples-solution1
+Creating solution template version for template: sdkexamples-solution1
+Solution template version created successfully
+Successfully extracted solution template version ID: 7a8e5772-899c-4128-b3a5-80ec414e4b9f*4E0CAA57E1E3D1EE525B9EB955CC9EE2A9ECEB932427359A68A069F24C434EB1
+Creating target in resource group: sdkexamples
+Target provisioning completed successfully. Final provisioning state: Succeeded
+Target created successfully: sdkbox-mk799jyjsdd
+==================================================
+STEP 3: Setting Configuration Values via Configuration API
+==================================================
+Calling Configuration API with:
+  Config Name: sdkbox-mk799jyjsddConfig
+  Solution Name: sdkexamples-solution1
+  Version: 1.0.0
+  Configuration Values:
+    HealthCheckEndpoint: http://localhost:8080/health
+    EnableLocalLog: true
+    AgentEndpoint: http://localhost:8080/agent
+    HealthCheckEnabled: true
+    ApplicationEndpoint: http://localhost:8080/app
+    TemperatureRangeMax: 100.5
+    ErrorThreshold: 35.3
+
+Debug: Request URL:
+https://management.azure.com/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/configurations/sdkbox-mk799jyjsddConfig/DynamicConfigurations/sdkexamples-solution1/versions/version1?api-version=2024-06-01-preview
+Making PUT call to Configuration API: https://management.azure.com/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/configurations/sdkbox-mk799jyjsddConfig/DynamicConfigurations/sdkexamples-solution1/versions/version1?api-version=2024-06-01-preview
+Request body: {"properties":{"provisioningState":"Succeeded","values":"HealthCheckEndpoint: http://localhost:8080/health\nEnableLocalLog: true\nAgentEndpoint: http://localhost:8080/agent\nHealthCheckEnabled: true\nApplicationEndpoint: http://localhost:8080/app\nTemperatureRangeMax: 100.5\nErrorThreshold: 35.3\n"}}
+
+Debug: Response Details:
+- Status Code: 200
+
+Debug: Response Body:
+{"id":"/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/configurations/sdkbox-mk799jyjsddConfig/DynamicConfigurations/sdkexamples-solution1/versions/version1","name":"version1","type":"microsoft.edge/configurations/dynamicconfigurations/versions","systemData":{"createdBy":"cba491bc-48c0-44a6-a6c7-23362a7f54a9","createdByType":"Application","createdAt":"2025-09-11T03:59:03.781696Z","lastModifiedBy":"audapure@microsoft.com","lastModifiedByType":"User","lastModifiedAt":"2025-09-26T04:00:01.7664664Z"},"properties":{"values":"HealthCheckEndpoint: http://localhost:8080/health\nEnableLocalLog: true\nAgentEndpoint: http://localhost:8080/agent\nHealthCheckEnabled: true\nApplicationEndpoint: http://localhost:8080/app\nTemperatureRangeMax: 100.5\nErrorThreshold: 35.3\n","provisioningState":"Succeeded"}}
+Configuration API call successful. Status: 200
+Configuration API call completed successfully
+
+==================================================
+STEP 3.1: Getting Configuration to verify values
+==================================================
+Making GET call to Configuration API: https://management.azure.com/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/configurations/sdkbox-mk799jyjsddConfig/DynamicConfigurations/sdkexamples-solution1/versions/version1?api-version=2024-06-01-preview
+Configuration GET API call successful. Status: 200
+Retrieved Configuration Response: {"id":"/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/configurations/sdkbox-mk799jyjsddConfig/DynamicConfigurations/sdkexamples-solution1/versions/version1","name":"version1","type":"microsoft.edge/configurations/dynamicconfigurations/versions","systemData":{"createdBy":"cba491bc-48c0-44a6-a6c7-23362a7f54a9","createdByType":"Application","createdAt":"2025-09-11T03:59:03.781696Z","lastModifiedBy":"audapure@microsoft.com","lastModifiedByType":"User","lastModifiedAt":"2025-09-26T04:00:01.7664664Z"},"properties":{"values":"HealthCheckEndpoint: http://localhost:8080/health\nEnableLocalLog: true\nAgentEndpoint: http://localhost:8080/agent\nHealthCheckEnabled: true\nApplicationEndpoint: http://localhost:8080/app\nTemperatureRangeMax: 100.5\nErrorThreshold: 35.3\n","provisioningState":"Succeeded"}}
+Parsed Configuration Data:
+{
+  "id": "/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/configurations/sdkbox-mk799jyjsddConfig/DynamicConfigurations/sdkexamples-solution1/versions/version1",
+  "name": "version1",
+  "properties": {
+    "provisioningState": "Succeeded",
+    "values": "HealthCheckEndpoint: http://localhost:8080/health\nEnableLocalLog: true\nAgentEndpoint: http://localhost:8080/agent\nHealthCheckEnabled: true\nApplicationEndpoint: http://localhost:8080/app\nTemperatureRangeMax: 100.5\nErrorThreshold: 35.3\n"
+  },
+  "systemData": {
+    "createdAt": "2025-09-11T03:59:03.781696Z",
+    "createdBy": "cba491bc-48c0-44a6-a6c7-23362a7f54a9",
+    "createdByType": "Application",
+    "lastModifiedAt": "2025-09-26T04:00:01.7664664Z",
+    "lastModifiedBy": "audapure@microsoft.com",
+    "lastModifiedByType": "User"
+  },
+  "type": "microsoft.edge/configurations/dynamicconfigurations/versions"
 }
+Configuration Values: HealthCheckEndpoint: http://localhost:8080/health
+EnableLocalLog: true
+AgentEndpoint: http://localhost:8080/agent
+HealthCheckEnabled: true
+ApplicationEndpoint: http://localhost:8080/app
+TemperatureRangeMax: 100.5
+ErrorThreshold: 35.3
+
+==================================================
+STEP 4: Review Target Deployment
+==================================================
+Using solution template version ID: 7a8e5772-899c-4128-b3a5-80ec414e4b9f*4E0CAA57E1E3D1EE525B9EB955CC9EE2A9ECEB932427359A68A069F24C434EB1
+Starting review for target sdkbox-mk799jyjsdd
+Review completed for target sdkbox-mk799jyjsdd
+==================================================
+STEP 5: Publish and Install Solution
+==================================================
+The workflow has completed the following steps:
+✓ Context management with capabilities
+✓ Schema creation
+✓ Solution template creation
+✓ Target creation
+✓ Configuration API calls
+✓ Target review
+
+TARGET INFORMATION:
+  Name: sdkbox-mk799jyjsdd
+  Resource Group: sdkexamples
+  Capabilities: [sdkexamples-soap-1182]
+
+CONFIGURATION COMPLETED:
+  Config Name: sdkbox-mk799jyjsddConfig
+  Solution Name: sdkexamples-solution1
+
+Proceeding with publish and install operations...
+Publishing solution version to target sdkbox-mk799jyjsdd
+Publish operation completed successfully
+Installing solution version on target sdkbox-mk799jyjsdd
+Install operation completed successfully
+
+==================================================
+WORKFLOW COMPLETED SUCCESSFULLY!
+==================================================
 ```
-
-### Creating a Schema
-
-```go
-func createSchema(ctx context.Context, client *armworkloadorchestration.Client) (*armworkloadorchestration.Schema, error) {
-    schema := &armworkloadorchestration.Schema{
-        Properties: &armworkloadorchestration.SchemaProperties{
-            Description: to.StringPtr("Test Schema"),
-            Version:    to.StringPtr("1.0.0"),
-        },
-    }
-
-    result, err := client.CreateOrUpdate(ctx, resourceGroup, "test-schema", schema, nil)
-    if err != nil {
-        return nil, fmt.Errorf("failed to create schema: %v", err)
-    }
-
-    return &result.Schema, nil
-}
-```
-
-### Managing Solution Templates
-
-```go
-func createSolutionTemplate(ctx context.Context, client *armworkloadorchestration.Client) error {
-    template := &armworkloadorchestration.SolutionTemplate{
-        Properties: &armworkloadorchestration.SolutionTemplateProperties{
-            SchemaReference: &armworkloadorchestration.Reference{
-                Name:    to.StringPtr("test-schema"),
-                Version: to.StringPtr("1.0.0"),
-            },
-        },
-    }
-
-    _, err := client.CreateOrUpdateTemplate(ctx, resourceGroup, "test-template", template, nil)
-    return err
-}
-```
-
-## Error Handling
-
-The implementation includes robust error handling:
-
-```go
-func withRetry(ctx context.Context, op func() error) error {
-    maxRetries := 3
-    backoff := time.Second
-
-    for i := 0; i < maxRetries; i++ {
-        err := op()
-        if err == nil {
-            return nil
-        }
-
-        if !isRetryableError(err) {
-            return err
-        }
-
-        if i < maxRetries-1 {
-            time.Sleep(backoff)
-            backoff *= 2 // Exponential backoff
-        }
-    }
-    return fmt.Errorf("operation failed after %d retries", maxRetries)
-}
-```
-
-## Best Practices
-
-1. **Error Handling**
-   - Use explicit error checking
-   - Implement retry mechanisms for transient failures
-   - Provide detailed error context
-
-2. **Resource Management**
-   - Use `defer` for cleanup
-   - Implement proper context handling
-   - Close connections and resources properly
-
-3. **Performance**
-   - Use goroutines for concurrent operations
-   - Implement connection pooling
-   - Cache frequently used data
-
-4. **Security**
-   - Use secure credential management
-   - Implement proper logging (avoid sensitive data)
-   - Use HTTPS for all connections
-
-## Common Issues and Solutions
-
-1. **Authentication Failures**
-   - Verify Azure role assignments
-   - Check credential expiration
-   - Ensure proper permissions
-
-2. **Resource Creation Failures**
-   - Verify resource name uniqueness
-   - Check resource quota limits
-   - Validate input parameters
-
-3. **Network Issues**
-   - Implement proper timeouts
-   - Use connection pooling
-   - Add retry logic for transient failures
-
-## Testing
-
-The implementation includes:
-
-```go
-func TestSchemaCreation(t *testing.T) {
-    // Test code examples
-}
-```
-
-Run tests using:
-```bash
-go test ./...
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Run tests: `go test ./...`
-4. Commit your changes
-5. Push to the branch
-6. Create a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
