@@ -1,0 +1,1566 @@
+[
+  {
+    "name": "nice2-Soap",
+    "description": "Existing capability: nice2-Soap"
+  },
+  {
+    "name": "e2eTest-factory-Cap-2149",
+    "description": "Existing capability: e2eTest-factory-Cap-2149"
+  },
+  {
+    "name": "sdkexamples-soap-5784",
+    "description": "Existing capability: sdkexamples-soap-5784"
+  },
+  {
+    "name": "sdkexamples-shampoo-6170",
+    "description": "Existing capability: sdkexamples-shampoo-6170"
+  },
+  {
+    "name": "sdkexamples-shampoo-6230",
+    "description": "Existing capability: sdkexamples-shampoo-6230"
+  },
+  {
+    "name": "sdkexamples-shampoo-3352",
+    "description": "Existing capability: sdkexamples-shampoo-3352"
+  },
+  {
+    "name": "jiaduaks0925-shampoo",
+    "description": "Existing capability: jiaduaks0925-shampoo"
+  },
+  {
+    "name": "sdkexamples-shampoo-3637",
+    "description": "Existing capability: sdkexamples-shampoo-3637"
+  },
+  {
+    "name": "Fuzz_0_1004",
+    "description": "Existing capability: Fuzz_0_1004"
+  },
+  {
+    "name": "sdkexamples-soap-3274",
+    "description": "SDK generated soap manufacturing capability"
+  },
+  {
+    "name": "sdkexamples-soap-6866",
+    "description": "Existing capability: sdkexamples-soap-6866"
+  },
+  {
+    "name": "bpt-soap",
+    "description": "Existing capability: bpt-soap"
+  },
+  {
+    "name": "sdkexamples-shampoo-3838",
+    "description": "Existing capability: sdkexamples-shampoo-3838"
+  },
+  {
+    "name": "sdkexamples-soap-5533",
+    "description": "Existing capability: sdkexamples-soap-5533"
+  },
+  {
+    "name": "sdkexamples-soap-1333",
+    "description": "SDK generated soap manufacturing capability"
+  },
+  {
+    "name": "audapure-Shampoo",
+    "description": "Existing capability: audapure-Shampoo"
+  },
+  {
+    "name": "e2eTest-factory-Cap-1843",
+    "description": "Existing capability: e2eTest-factory-Cap-1843"
+  },
+  {
+    "name": "e2eTest-factory-Cap-1841",
+    "description": "Existing capability: e2eTest-factory-Cap-1841"
+  },
+  {
+    "name": "Conditioner",
+    "description": "Existing capability: Conditioner"
+  },
+  {
+    "name": "sdkexamples-soap-8180",
+    "description": "Existing capability: sdkexamples-soap-8180"
+  },
+  {
+    "name": "pgdemo-Shampoo",
+    "description": "Existing capability: pgdemo-Shampoo"
+  },
+  {
+    "name": "sdkexamples-shampoo-7697",
+    "description": "Existing capability: sdkexamples-shampoo-7697"
+  },
+  {
+    "name": "e2eTest-factory-Cap-1844",
+    "description": "Existing capability: e2eTest-factory-Cap-1844"
+  },
+  {
+    "name": "sdkexamples-soap-4947",
+    "description": "Existing capability: sdkexamples-soap-4947"
+  },
+  {
+    "name": "sdkexamples-soap-3518",
+    "description": "Existing capability: sdkexamples-soap-3518"
+  },
+  {
+    "name": "sdkexamples-soap-1497",
+    "description": "Existing capability: sdkexamples-soap-1497"
+  },
+  {
+    "name": "e2eTest-factory-Cap-2153",
+    "description": "Existing capability: e2eTest-factory-Cap-2153"
+  },
+  {
+    "name": "sdkexamples-soap-2114",
+    "description": "Existing capability: sdkexamples-soap-2114"
+  },
+  {
+    "name": "pgdemo-Soap",
+    "description": "Existing capability: pgdemo-Soap"
+  },
+  {
+    "name": "sdkexamples-shampoo-5635",
+    "description": "Existing capability: sdkexamples-shampoo-5635"
+  },
+  {
+    "name": "sdkexamples-soap-3337",
+    "description": "Existing capability: sdkexamples-soap-3337"
+  },
+  {
+    "name": "sdkexamples-shampoo-7059",
+    "description": "Existing capability: sdkexamples-shampoo-7059"
+  },
+  {
+    "name": "sdkexamples-soap-5212",
+    "description": "Existing capability: sdkexamples-soap-5212"
+  },
+  {
+    "name": "sdkexamples-soap-5595",
+    "description": "Existing capability: sdkexamples-soap-5595"
+  },
+  {
+    "name": "Fuzz_0_0412",
+    "description": "Existing capability: Fuzz_0_0412"
+  },
+  {
+    "name": "Fuzz_1_1003",
+    "description": "Existing capability: Fuzz_1_1003"
+  },
+  {
+    "name": "e2eTest-line-Cap-0612",
+    "description": "Existing capability: e2eTest-line-Cap-0612"
+  },
+  {
+    "name": "sdkexamples-shampoo-5765",
+    "description": "Existing capability: sdkexamples-shampoo-5765"
+  },
+  {
+    "name": "e2eTest-factory-Cap-0444",
+    "description": "Existing capability: e2eTest-factory-Cap-0444"
+  },
+  {
+    "name": "sdkexamples-shampoo-3973",
+    "description": "Existing capability: sdkexamples-shampoo-3973"
+  },
+  {
+    "name": "sdkexamples-shampoo-7268",
+    "description": "Existing capability: sdkexamples-shampoo-7268"
+  },
+  {
+    "name": "e2eTest-factory-Cap-2202",
+    "description": "Existing capability: e2eTest-factory-Cap-2202"
+  },
+  {
+    "name": "sdkexamples-soap-5625",
+    "description": "Existing capability: sdkexamples-soap-5625"
+  },
+  {
+    "name": "sdkexamples-soap-5200",
+    "description": "Existing capability: sdkexamples-soap-5200"
+  },
+  {
+    "name": "sdkexamples-shampoo-2666",
+    "description": "Existing capability: sdkexamples-shampoo-2666"
+  },
+  {
+    "name": "sdkexamples-shampoo-1905",
+    "description": "Existing capability: sdkexamples-shampoo-1905"
+  },
+  {
+    "name": "sdkexamples-soap-9660",
+    "description": "SDK generated soap manufacturing capability"
+  },
+  {
+    "name": "sdkexamples-shampoo-7284",
+    "description": "Existing capability: sdkexamples-shampoo-7284"
+  },
+  {
+    "name": "sdkexamples-shampoo-7687",
+    "description": "Existing capability: sdkexamples-shampoo-7687"
+  },
+  {
+    "name": "e2eTest-line-Cap-1005",
+    "description": "Existing capability: e2eTest-line-Cap-1005"
+  },
+  {
+    "name": "sdkexamples-soap-7547",
+    "description": "Existing capability: sdkexamples-soap-7547"
+  },
+  {
+    "name": "Fuzz_3_0412",
+    "description": "Existing capability: Fuzz_3_0412"
+  },
+  {
+    "name": "sdkexamples-soap-2098",
+    "description": "Existing capability: sdkexamples-soap-2098"
+  },
+  {
+    "name": "sdkexamples-shampoo-9333",
+    "description": "Existing capability: sdkexamples-shampoo-9333"
+  },
+  {
+    "name": "sdkexamples-shampoo-1807",
+    "description": "Existing capability: sdkexamples-shampoo-1807"
+  },
+  {
+    "name": "sdkexamples-shampoo-1499",
+    "description": "SDK generated shampoo manufacturing capability"
+  },
+  {
+    "name": "Deodorant",
+    "description": "Existing capability: Deodorant"
+  },
+  {
+    "name": "sdkexamples-shampoo-3860",
+    "description": "SDK generated shampoo manufacturing capability"
+  },
+  {
+    "name": "sdkexamples-shampoo-9345",
+    "description": "Existing capability: sdkexamples-shampoo-9345"
+  },
+  {
+    "name": "sdkexamples-shampoo-4002",
+    "description": "Existing capability: sdkexamples-shampoo-4002"
+  },
+  {
+    "name": "sdkexamples-shampoo-8563",
+    "description": "Existing capability: sdkexamples-shampoo-8563"
+  },
+  {
+    "name": "Fuzz_0_0416",
+    "description": "Existing capability: Fuzz_0_0416"
+  },
+  {
+    "name": "sdkexamples-soap-6960",
+    "description": "Existing capability: sdkexamples-soap-6960"
+  },
+  {
+    "name": "sdkexamples-shampoo-3097",
+    "description": "Existing capability: sdkexamples-shampoo-3097"
+  },
+  {
+    "name": "sdkexamples-shampoo-4461",
+    "description": "Existing capability: sdkexamples-shampoo-4461"
+  },
+  {
+    "name": "sdkexamples-shampoo-7454",
+    "description": "Existing capability: sdkexamples-shampoo-7454"
+  },
+  {
+    "name": "dcv-common-Shampoo",
+    "description": "Existing capability: dcv-common-Shampoo"
+  },
+  {
+    "name": "Fuzz_3_1003",
+    "description": "Existing capability: Fuzz_3_1003"
+  },
+  {
+    "name": "sdkexamples-soap-3426",
+    "description": "Existing capability: sdkexamples-soap-3426"
+  },
+  {
+    "name": "sdkexamples-soap-4373",
+    "description": "Existing capability: sdkexamples-soap-4373"
+  },
+  {
+    "name": "sdkexamples-soap-1182",
+    "description": "SDK generated soap manufacturing capability"
+  },
+  {
+    "name": "e2eTest-line-Cap-1838",
+    "description": "Existing capability: e2eTest-line-Cap-1838"
+  },
+  {
+    "name": "e2eTest-factory-Cap-2158",
+    "description": "Existing capability: e2eTest-factory-Cap-2158"
+  },
+  {
+    "name": "sdkexamples-soap-5967",
+    "description": "Existing capability: sdkexamples-soap-5967"
+  },
+  {
+    "name": "sdkexamples-soap-8574",
+    "description": "Existing capability: sdkexamples-soap-8574"
+  },
+  {
+    "name": "kupracb-Shampoo",
+    "description": "Existing capability: kupracb-Shampoo"
+  },
+  {
+    "name": "e2eTest-line-Cap-1955",
+    "description": "Existing capability: e2eTest-line-Cap-1955"
+  },
+  {
+    "name": "sdkexamples-shampoo-3804",
+    "description": "Existing capability: sdkexamples-shampoo-3804"
+  },
+  {
+    "name": "sdkexamples-soap-1859",
+    "description": "Existing capability: sdkexamples-soap-1859"
+  },
+  {
+    "name": "athc-Shampoo",
+    "description": "Existing capability: athc-Shampoo"
+  },
+  {
+    "name": "sdkexamples-shampoo-5788",
+    "description": "Existing capability: sdkexamples-shampoo-5788"
+  },
+  {
+    "name": "e2eTest-factory-Cap-1955",
+    "description": "Existing capability: e2eTest-factory-Cap-1955"
+  },
+  {
+    "name": "sdkexamples-soap-9782",
+    "description": "Existing capability: sdkexamples-soap-9782"
+  },
+  {
+    "name": "FuzzTest_0_fuzz-context-20250923-110002-8245e364_0923110014_8176",
+    "description": "Existing capability: FuzzTest_0_fuzz-context-20250923-110002-8245e364_0923110014_8176"
+  },
+  {
+    "name": "Fuzz_3_0349",
+    "description": "Existing capability: Fuzz_3_0349"
+  },
+  {
+    "name": "sdkexamples-shampoo-7034",
+    "description": "Existing capability: sdkexamples-shampoo-7034"
+  },
+  {
+    "name": "nn-Soap",
+    "description": "Existing capability: nn-Soap"
+  },
+  {
+    "name": "Fuzz_2_0411",
+    "description": "Existing capability: Fuzz_2_0411"
+  },
+  {
+    "name": "sdkexamples-shampoo-3264",
+    "description": "Existing capability: sdkexamples-shampoo-3264"
+  },
+  {
+    "name": "jd--15",
+    "description": "Existing capability: jd--15"
+  },
+  {
+    "name": "e2eTest-factory-Cap-0612",
+    "description": "Existing capability: e2eTest-factory-Cap-0612"
+  },
+  {
+    "name": "sdkexamples-soap-7970",
+    "description": "Existing capability: sdkexamples-soap-7970"
+  },
+  {
+    "name": "e2eTest-factory-Cap-2157",
+    "description": "Existing capability: e2eTest-factory-Cap-2157"
+  },
+  {
+    "name": "DonotDelete-GPU Enabled",
+    "description": "Existing capability: DonotDelete-GPU Enabled"
+  },
+  {
+    "name": "jd--19",
+    "description": "Existing capability: jd--19"
+  },
+  {
+    "name": "sdkexamples-soap-4202",
+    "description": "Existing capability: sdkexamples-soap-4202"
+  },
+  {
+    "name": "sdkexamples-soap-6256",
+    "description": "Existing capability: sdkexamples-soap-6256"
+  },
+  {
+    "name": "sdkexamples-soap-1494",
+    "description": "Existing capability: sdkexamples-soap-1494"
+  },
+  {
+    "name": "sdkexamples-shampoo-3725",
+    "description": "Existing capability: sdkexamples-shampoo-3725"
+  },
+  {
+    "name": "DonotDelete-Soap",
+    "description": "Existing capability: DonotDelete-Soap"
+  },
+  {
+    "name": "sdkexamples-soap-1691",
+    "description": "Existing capability: sdkexamples-soap-1691"
+  },
+  {
+    "name": "sdkexamples-shampoo-9762",
+    "description": "Existing capability: sdkexamples-shampoo-9762"
+  },
+  {
+    "name": "bpt-keyboard",
+    "description": "Existing capability: bpt-keyboard"
+  },
+  {
+    "name": "sdkexamples-soap-1046",
+    "description": "Existing capability: sdkexamples-soap-1046"
+  },
+  {
+    "name": "athc-Soap",
+    "description": "Existing capability: athc-Soap"
+  },
+  {
+    "name": "sdkexamples-shampoo-4611",
+    "description": "Existing capability: sdkexamples-shampoo-4611"
+  },
+  {
+    "name": "sdkexamples-soap-9092",
+    "description": "Existing capability: sdkexamples-soap-9092"
+  },
+  {
+    "name": "sdkexamples-shampoo-5301",
+    "description": "Existing capability: sdkexamples-shampoo-5301"
+  },
+  {
+    "name": "jd--00",
+    "description": "Existing capability: jd--00"
+  },
+  {
+    "name": "jd--04",
+    "description": "Existing capability: jd--04"
+  },
+  {
+    "name": "sdkexamples-soap-1712",
+    "description": "Existing capability: sdkexamples-soap-1712"
+  },
+  {
+    "name": "sdkexamples-shampoo-8273",
+    "description": "Existing capability: sdkexamples-shampoo-8273"
+  },
+  {
+    "name": "sdkexamples-shampoo-6348",
+    "description": "Existing capability: sdkexamples-shampoo-6348"
+  },
+  {
+    "name": "sdkexamples-shampoo-5932",
+    "description": "Existing capability: sdkexamples-shampoo-5932"
+  },
+  {
+    "name": "e2eTest-line-Cap-2154",
+    "description": "Existing capability: e2eTest-line-Cap-2154"
+  },
+  {
+    "name": "e2eTest-line-Cap-0531",
+    "description": "Existing capability: e2eTest-line-Cap-0531"
+  },
+  {
+    "name": "e2eTest-line-Cap-1843",
+    "description": "Existing capability: e2eTest-line-Cap-1843"
+  },
+  {
+    "name": "sdkexamples-soap-6111",
+    "description": "Existing capability: sdkexamples-soap-6111"
+  },
+  {
+    "name": "e2eTest-factory-Cap-1846",
+    "description": "Existing capability: e2eTest-factory-Cap-1846"
+  },
+  {
+    "name": "sdkexamples-soap-8447",
+    "description": "Existing capability: sdkexamples-soap-8447"
+  },
+  {
+    "name": "sdkexamples-shampoo-3192",
+    "description": "Existing capability: sdkexamples-shampoo-3192"
+  },
+  {
+    "name": "sdkexamples-shampoo-5700",
+    "description": "Existing capability: sdkexamples-shampoo-5700"
+  },
+  {
+    "name": "sdkexamples-shampoo-5502",
+    "description": "Existing capability: sdkexamples-shampoo-5502"
+  },
+  {
+    "name": "sdkexamples-soap-2896",
+    "description": "Existing capability: sdkexamples-soap-2896"
+  },
+  {
+    "name": "sdkexamples-soap-9347",
+    "description": "Existing capability: sdkexamples-soap-9347"
+  },
+  {
+    "name": "sdkexamples-shampoo-2118",
+    "description": "Existing capability: sdkexamples-shampoo-2118"
+  },
+  {
+    "name": "sdkexamples-soap-3993",
+    "description": "Existing capability: sdkexamples-soap-3993"
+  },
+  {
+    "name": "sdkexamples-soap-7565",
+    "description": "Existing capability: sdkexamples-soap-7565"
+  },
+  {
+    "name": "sdkexamples-soap-1461",
+    "description": "SDK generated soap manufacturing capability"
+  },
+  {
+    "name": "sdkexamples-soap-8537",
+    "description": "Existing capability: sdkexamples-soap-8537"
+  },
+  {
+    "name": "sdkexamples-soap-9636",
+    "description": "Existing capability: sdkexamples-soap-9636"
+  },
+  {
+    "name": "Fuzz_0_0350",
+    "description": "Existing capability: Fuzz_0_0350"
+  },
+  {
+    "name": "sdkexamples-shampoo-4440",
+    "description": "Existing capability: sdkexamples-shampoo-4440"
+  },
+  {
+    "name": "Fuzz_1_0412",
+    "description": "Existing capability: Fuzz_1_0412"
+  },
+  {
+    "name": "sdkexamples-soap-4578",
+    "description": "Existing capability: sdkexamples-soap-4578"
+  },
+  {
+    "name": "sdkexamples-shampoo-1346",
+    "description": "Existing capability: sdkexamples-shampoo-1346"
+  },
+  {
+    "name": "sdkexamples-soap-5242",
+    "description": "Existing capability: sdkexamples-soap-5242"
+  },
+  {
+    "name": "AAg-Shampoo",
+    "description": "Existing capability: AAg-Shampoo"
+  },
+  {
+    "name": "sdkexamples-soap-2757",
+    "description": "Existing capability: sdkexamples-soap-2757"
+  },
+  {
+    "name": "sdkexamples-soap-9239",
+    "description": "Existing capability: sdkexamples-soap-9239"
+  },
+  {
+    "name": "sdkexamples-shampoo-4040",
+    "description": "Existing capability: sdkexamples-shampoo-4040"
+  },
+  {
+    "name": "sdkexamples-soap-5579",
+    "description": "SDK generated soap manufacturing capability"
+  },
+  {
+    "name": "sdkexamples-soap-5056",
+    "description": "Existing capability: sdkexamples-soap-5056"
+  },
+  {
+    "name": "sdkexamples-soap-8588",
+    "description": "Existing capability: sdkexamples-soap-8588"
+  },
+  {
+    "name": "sdkexamples-soap-7893",
+    "description": "Existing capability: sdkexamples-soap-7893"
+  },
+  {
+    "name": "e2eTest-line-Cap-0734",
+    "description": "Existing capability: e2eTest-line-Cap-0734"
+  },
+  {
+    "name": "e2eTest-line-Cap-2202",
+    "description": "Existing capability: e2eTest-line-Cap-2202"
+  },
+  {
+    "name": "sdkexamples-soap-7493",
+    "description": "Existing capability: sdkexamples-soap-7493"
+  },
+  {
+    "name": "sdkexamples-shampoo-7217",
+    "description": "Existing capability: sdkexamples-shampoo-7217"
+  },
+  {
+    "name": "e2eTest-factory-Cap-2156",
+    "description": "Existing capability: e2eTest-factory-Cap-2156"
+  },
+  {
+    "name": "sdkexamples-soap-2922",
+    "description": "Existing capability: sdkexamples-soap-2922"
+  },
+  {
+    "name": "e2eTest-line-Cap-1952",
+    "description": "Existing capability: e2eTest-line-Cap-1952"
+  },
+  {
+    "name": "sdkexamples-shampoo-1909",
+    "description": "SDK generated shampoo manufacturing capability"
+  },
+  {
+    "name": "sdkexamples-shampoo-4711",
+    "description": "Existing capability: sdkexamples-shampoo-4711"
+  },
+  {
+    "name": "sdkexamples-soap-7305",
+    "description": "Existing capability: sdkexamples-soap-7305"
+  },
+  {
+    "name": "sdkexamples-shampoo-6829",
+    "description": "Existing capability: sdkexamples-shampoo-6829"
+  },
+  {
+    "name": "Cleaner",
+    "description": "Existing capability: Cleaner"
+  },
+  {
+    "name": "sdkexamples-soap-3005",
+    "description": "Existing capability: sdkexamples-soap-3005"
+  },
+  {
+    "name": "sdkexamples-shampoo-9455",
+    "description": "Existing capability: sdkexamples-shampoo-9455"
+  },
+  {
+    "name": "sdkexamples-shampoo-8696",
+    "description": "Existing capability: sdkexamples-shampoo-8696"
+  },
+  {
+    "name": "sdkexamples-soap-5737",
+    "description": "Existing capability: sdkexamples-soap-5737"
+  },
+  {
+    "name": "sdkexamples-shampoo-4191",
+    "description": "Existing capability: sdkexamples-shampoo-4191"
+  },
+  {
+    "name": "sdkexamples-shampoo-2139",
+    "description": "Existing capability: sdkexamples-shampoo-2139"
+  },
+  {
+    "name": "sdkexamples-soap-2425",
+    "description": "Existing capability: sdkexamples-soap-2425"
+  },
+  {
+    "name": "Fuzz_2_0349",
+    "description": "Existing capability: Fuzz_2_0349"
+  },
+  {
+    "name": "sdkexamples-soap-6528",
+    "description": "Existing capability: sdkexamples-soap-6528"
+  },
+  {
+    "name": "nn-Shampoo",
+    "description": "Existing capability: nn-Shampoo"
+  },
+  {
+    "name": "Fuzz_3_0416",
+    "description": "Existing capability: Fuzz_3_0416"
+  },
+  {
+    "name": "sdkexamples-shampoo-5438",
+    "description": "SDK generated shampoo manufacturing capability"
+  },
+  {
+    "name": "sdkexamples-soap-6609",
+    "description": "Existing capability: sdkexamples-soap-6609"
+  },
+  {
+    "name": "sdkexamples-soap-7411",
+    "description": "Existing capability: sdkexamples-soap-7411"
+  },
+  {
+    "name": "sdkexamples-soap-3626",
+    "description": "Existing capability: sdkexamples-soap-3626"
+  },
+  {
+    "name": "sdkexamples-soap-3245",
+    "description": "Existing capability: sdkexamples-soap-3245"
+  },
+  {
+    "name": "e2eTest-line-Cap-2211",
+    "description": "Existing capability: e2eTest-line-Cap-2211"
+  },
+  {
+    "name": "Toothbrush",
+    "description": "Existing capability: Toothbrush"
+  },
+  {
+    "name": "Fuzz_2_0412",
+    "description": "Existing capability: Fuzz_2_0412"
+  },
+  {
+    "name": "sdkexamples-soap-2122",
+    "description": "Existing capability: sdkexamples-soap-2122"
+  },
+  {
+    "name": "e2eTest-factory-Cap-0819",
+    "description": "Existing capability: e2eTest-factory-Cap-0819"
+  },
+  {
+    "name": "wo-test-capability",
+    "description": "Existing capability: wo-test-capability"
+  },
+  {
+    "name": "Fuzz_3_0411",
+    "description": "Existing capability: Fuzz_3_0411"
+  },
+  {
+    "name": "e2eTest-line-Cap-0453",
+    "description": "e2eTest-line-Cap-0453"
+  },
+  {
+    "name": "DonotDelete-Shampoo",
+    "description": "Existing capability: DonotDelete-Shampoo"
+  },
+  {
+    "name": "e2eTest-factory-Cap-0531",
+    "description": "Existing capability: e2eTest-factory-Cap-0531"
+  },
+  {
+    "name": "sdkexamples-shampoo-3233",
+    "description": "Existing capability: sdkexamples-shampoo-3233"
+  },
+  {
+    "name": "Mouthwash",
+    "description": "Existing capability: Mouthwash"
+  },
+  {
+    "name": "AAg-Soap",
+    "description": "Existing capability: AAg-Soap"
+  },
+  {
+    "name": "sdkexamples-soap-4669",
+    "description": "Existing capability: sdkexamples-soap-4669"
+  },
+  {
+    "name": "sdkexamples-soap-1256",
+    "description": "Existing capability: sdkexamples-soap-1256"
+  },
+  {
+    "name": "sdkexamples-shampoo-7663",
+    "description": "Existing capability: sdkexamples-shampoo-7663"
+  },
+  {
+    "name": "audapure-Soap",
+    "description": "Existing capability: audapure-Soap"
+  },
+  {
+    "name": "nice-Soap",
+    "description": "Existing capability: nice-Soap"
+  },
+  {
+    "name": "sdkexamples-soap-7061",
+    "description": "Existing capability: sdkexamples-soap-7061"
+  },
+  {
+    "name": "sdkexamples-soap-1468",
+    "description": "Existing capability: sdkexamples-soap-1468"
+  },
+  {
+    "name": "sdkexamples-shampoo-7245",
+    "description": "Existing capability: sdkexamples-shampoo-7245"
+  },
+  {
+    "name": "kuprac-Shampoo",
+    "description": "Existing capability: kuprac-Shampoo"
+  },
+  {
+    "name": "sdkexamples-soap-3382",
+    "description": "Existing capability: sdkexamples-soap-3382"
+  },
+  {
+    "name": "sdkexamples-shampoo-4539",
+    "description": "Existing capability: sdkexamples-shampoo-4539"
+  },
+  {
+    "name": "sdkexamples-soap-2779",
+    "description": "Existing capability: sdkexamples-soap-2779"
+  },
+  {
+    "name": "e2eTest-factory-Cap-1833",
+    "description": "Existing capability: e2eTest-factory-Cap-1833"
+  },
+  {
+    "name": "sdkexamples-shampoo-7193",
+    "description": "Existing capability: sdkexamples-shampoo-7193"
+  },
+  {
+    "name": "kupracb-Soap",
+    "description": "Existing capability: kupracb-Soap"
+  },
+  {
+    "name": "sdkexamples-shampoo-3854",
+    "description": "Existing capability: sdkexamples-shampoo-3854"
+  },
+  {
+    "name": "sdkexamples-soap-7809",
+    "description": "Existing capability: sdkexamples-soap-7809"
+  },
+  {
+    "name": "Fuzz_2_0406",
+    "description": "Existing capability: Fuzz_2_0406"
+  },
+  {
+    "name": "sdkexamples-soap-7139",
+    "description": "Existing capability: sdkexamples-soap-7139"
+  },
+  {
+    "name": "e2eTest-factory-Cap-1952",
+    "description": "Existing capability: e2eTest-factory-Cap-1952"
+  },
+  {
+    "name": "Fuzz_2_0350",
+    "description": "Existing capability: Fuzz_2_0350"
+  },
+  {
+    "name": "sdkexamples-shampoo-3723",
+    "description": "Existing capability: sdkexamples-shampoo-3723"
+  },
+  {
+    "name": "Shampoo",
+    "description": "Existing capability: Shampoo"
+  },
+  {
+    "name": "Fuzz_1_0349",
+    "description": "Existing capability: Fuzz_1_0349"
+  },
+  {
+    "name": "Fuzz_2_0416",
+    "description": "Existing capability: Fuzz_2_0416"
+  },
+  {
+    "name": "sdkexamples-soap-4086",
+    "description": "Existing capability: sdkexamples-soap-4086"
+  },
+  {
+    "name": "Fuzz_0_0411",
+    "description": "Existing capability: Fuzz_0_0411"
+  },
+  {
+    "name": "Fuzz_1_0350",
+    "description": "Existing capability: Fuzz_1_0350"
+  },
+  {
+    "name": "sdkexamples-shampoo-8402",
+    "description": "Existing capability: sdkexamples-shampoo-8402"
+  },
+  {
+    "name": "e2eTest-factory-Cap-2211",
+    "description": "Existing capability: e2eTest-factory-Cap-2211"
+  },
+  {
+    "name": "e2eTest-line-Cap-1844",
+    "description": "Existing capability: e2eTest-line-Cap-1844"
+  },
+  {
+    "name": "sdkexamples-shampoo-3278",
+    "description": "Existing capability: sdkexamples-shampoo-3278"
+  },
+  {
+    "name": "FuzzTest_0_fuzz-context-20250923-105120-3d57838a_0923105131_8176",
+    "description": "Existing capability: FuzzTest_0_fuzz-context-20250923-105120-3d57838a_0923105131_8176"
+  },
+  {
+    "name": "nice-Shampoo",
+    "description": "Existing capability: nice-Shampoo"
+  },
+  {
+    "name": "sdkexamples-soap-5237",
+    "description": "Existing capability: sdkexamples-soap-5237"
+  },
+  {
+    "name": "kuprac-Soap",
+    "description": "Existing capability: kuprac-Soap"
+  },
+  {
+    "name": "sdkexamples-soap-7773",
+    "description": "SDK generated soap manufacturing capability"
+  },
+  {
+    "name": "sdkexamples-shampoo-3761",
+    "description": "Existing capability: sdkexamples-shampoo-3761"
+  },
+  {
+    "name": "sdkexamples-shampoo-3111",
+    "description": "Existing capability: sdkexamples-shampoo-3111"
+  },
+  {
+    "name": "sdkexamples-soap-4817",
+    "description": "Existing capability: sdkexamples-soap-4817"
+  },
+  {
+    "name": "sdkexamples-shampoo-9004",
+    "description": "Existing capability: sdkexamples-shampoo-9004"
+  },
+  {
+    "name": "___fuzz_sentinel___",
+    "description": "Existing capability: ___fuzz_sentinel___"
+  },
+  {
+    "name": "e2eTest-factory-Cap-1838",
+    "description": "Existing capability: e2eTest-factory-Cap-1838"
+  },
+  {
+    "name": "e2eTest-factory-Cap-2154",
+    "description": "Existing capability: e2eTest-factory-Cap-2154"
+  },
+  {
+    "name": "jd--01",
+    "description": "Existing capability: jd--01"
+  },
+  {
+    "name": "e2eTest-line-Cap-1833",
+    "description": "Existing capability: e2eTest-line-Cap-1833"
+  },
+  {
+    "name": "sdkexamples-soap-7896",
+    "description": "Existing capability: sdkexamples-soap-7896"
+  },
+  {
+    "name": "sdkexamples-soap-1978",
+    "description": "Existing capability: sdkexamples-soap-1978"
+  },
+  {
+    "name": "Fuzz_0_0406",
+    "description": "Existing capability: Fuzz_0_0406"
+  },
+  {
+    "name": "sdkexamples-shampoo-6876",
+    "description": "Existing capability: sdkexamples-shampoo-6876"
+  },
+  {
+    "name": "sdkexamples-soap-9993",
+    "description": "Existing capability: sdkexamples-soap-9993"
+  },
+  {
+    "name": "sdkexamples-shampoo-4515",
+    "description": "SDK generated shampoo manufacturing capability"
+  },
+  {
+    "name": "jd--06",
+    "description": "Existing capability: jd--06"
+  },
+  {
+    "name": "e2eTest-factory-Cap-1845",
+    "description": "Existing capability: e2eTest-factory-Cap-1845"
+  },
+  {
+    "name": "sdkexamples-soap-5790",
+    "description": "Existing capability: sdkexamples-soap-5790"
+  },
+  {
+    "name": "sdkexamples-shampoo-9493",
+    "description": "Existing capability: sdkexamples-shampoo-9493"
+  },
+  {
+    "name": "sdkexamples-shampoo-9427",
+    "description": "Existing capability: sdkexamples-shampoo-9427"
+  },
+  {
+    "name": "sdkexamples-shampoo-5478",
+    "description": "Existing capability: sdkexamples-shampoo-5478"
+  },
+  {
+    "name": "sdkexamples-soap-9935",
+    "description": "Existing capability: sdkexamples-soap-9935"
+  },
+  {
+    "name": "sdkexamples-shampoo-4568",
+    "description": "Existing capability: sdkexamples-shampoo-4568"
+  },
+  {
+    "name": "sdkexamples-soap-4804",
+    "description": "Existing capability: sdkexamples-soap-4804"
+  },
+  {
+    "name": "sdkexamples-soap-9642",
+    "description": "Existing capability: sdkexamples-soap-9642"
+  },
+  {
+    "name": "sdkexamples-shampoo-5285",
+    "description": "Existing capability: sdkexamples-shampoo-5285"
+  },
+  {
+    "name": "sdkexamples-soap-6627",
+    "description": "Existing capability: sdkexamples-soap-6627"
+  },
+  {
+    "name": "dcv-common-Soap",
+    "description": "Existing capability: dcv-common-Soap"
+  },
+  {
+    "name": "sdkexamples-shampoo-5013",
+    "description": "Existing capability: sdkexamples-shampoo-5013"
+  },
+  {
+    "name": "sdkexamples-shampoo-8251",
+    "description": "SDK generated shampoo manufacturing capability"
+  },
+  {
+    "name": "sdkexamples-shampoo-1378",
+    "description": "Existing capability: sdkexamples-shampoo-1378"
+  },
+  {
+    "name": "e2eTest-line-Cap-0819",
+    "description": "Existing capability: e2eTest-line-Cap-0819"
+  },
+  {
+    "name": "sdkexamples-soap-7461",
+    "description": "Existing capability: sdkexamples-soap-7461"
+  },
+  {
+    "name": "sdkexamples-soap-7988",
+    "description": "Existing capability: sdkexamples-soap-7988"
+  },
+  {
+    "name": "sdkexamples-shampoo-6593",
+    "description": "Existing capability: sdkexamples-shampoo-6593"
+  },
+  {
+    "name": "fuzz_sentinel",
+    "description": "Existing capability: fuzz_sentinel"
+  },
+  {
+    "name": "jd--14",
+    "description": "Existing capability: jd--14"
+  },
+  {
+    "name": "sdkexamples-soap-8539",
+    "description": "Existing capability: sdkexamples-soap-8539"
+  },
+  {
+    "name": "sdkexamples-soap-9940",
+    "description": "Existing capability: sdkexamples-soap-9940"
+  },
+  {
+    "name": "sdkexamples-shampoo-8297",
+    "description": "Existing capability: sdkexamples-shampoo-8297"
+  },
+  {
+    "name": "jd--05",
+    "description": "Existing capability: jd--05"
+  },
+  {
+    "name": "sdkexamples-soap-2264",
+    "description": "Existing capability: sdkexamples-soap-2264"
+  },
+  {
+    "name": "sdkexamples-soap-2727",
+    "description": "Existing capability: sdkexamples-soap-2727"
+  },
+  {
+    "name": "sdkexamples-soap-9892",
+    "description": "Existing capability: sdkexamples-soap-9892"
+  },
+  {
+    "name": "sdkexamples-shampoo-3660",
+    "description": "Existing capability: sdkexamples-shampoo-3660"
+  },
+  {
+    "name": "sdkexamples-soap-1679",
+    "description": "Existing capability: sdkexamples-soap-1679"
+  },
+  {
+    "name": "sdkexamples-soap-8255",
+    "description": "Existing capability: sdkexamples-soap-8255"
+  },
+  {
+    "name": "sdkexamples-soap-2171",
+    "description": "Existing capability: sdkexamples-soap-2171"
+  },
+  {
+    "name": "sdkexamples-soap-4622",
+    "description": "Existing capability: sdkexamples-soap-4622"
+  },
+  {
+    "name": "sdkexamples-soap-1426",
+    "description": "Existing capability: sdkexamples-soap-1426"
+  },
+  {
+    "name": "loadtest-soap",
+    "description": "Existing capability: loadtest-soap"
+  },
+  {
+    "name": "sdkexamples-shampoo-6440",
+    "description": "SDK generated shampoo manufacturing capability"
+  },
+  {
+    "name": "Fuzz_0_1140",
+    "description": "Existing capability: Fuzz_0_1140"
+  },
+  {
+    "name": "Fuzz_1_0416",
+    "description": "Existing capability: Fuzz_1_0416"
+  },
+  {
+    "name": "sdkexamples-shampoo-1199",
+    "description": "Existing capability: sdkexamples-shampoo-1199"
+  },
+  {
+    "name": "sdkexamples-shampoo-6588",
+    "description": "SDK generated shampoo manufacturing capability"
+  },
+  {
+    "name": "FuzzTest_0_fuzz-context-20250923-105253-cfe40ded_0923105303_8176",
+    "description": "Existing capability: FuzzTest_0_fuzz-context-20250923-105253-cfe40ded_0923105303_8176"
+  },
+  {
+    "name": "sdkexamples-soap-8562",
+    "description": "Existing capability: sdkexamples-soap-8562"
+  },
+  {
+    "name": "sdkexamples-shampoo-2670",
+    "description": "Existing capability: sdkexamples-shampoo-2670"
+  },
+  {
+    "name": "e2eTest-line-Cap-1845",
+    "description": "Existing capability: e2eTest-line-Cap-1845"
+  },
+  {
+    "name": "sdkexamples-soap-6289",
+    "description": "Existing capability: sdkexamples-soap-6289"
+  },
+  {
+    "name": "sdkexamples-shampoo-4353",
+    "description": "Existing capability: sdkexamples-shampoo-4353"
+  },
+  {
+    "name": "sdkexamples-soap-1807",
+    "description": "Existing capability: sdkexamples-soap-1807"
+  },
+  {
+    "name": "sdkexamples-soap-9814",
+    "description": "Existing capability: sdkexamples-soap-9814"
+  },
+  {
+    "name": "mchichili-Shampoo",
+    "description": "Existing capability: mchichili-Shampoo"
+  },
+  {
+    "name": "e2eTest-line-Cap-2157",
+    "description": "Existing capability: e2eTest-line-Cap-2157"
+  },
+  {
+    "name": "sdkexamples-soap-2760",
+    "description": "Existing capability: sdkexamples-soap-2760"
+  },
+  {
+    "name": "e2eTest-factory-Cap-2150",
+    "description": "Existing capability: e2eTest-factory-Cap-2150"
+  },
+  {
+    "name": "sdkexamples-shampoo-5703",
+    "description": "Existing capability: sdkexamples-shampoo-5703"
+  },
+  {
+    "name": "wo-demo-capability",
+    "description": "Existing capability: wo-demo-capability"
+  },
+  {
+    "name": "sdkexamples-soap-8657",
+    "description": "Existing capability: sdkexamples-soap-8657"
+  },
+  {
+    "name": "sdkexamples-soap-8243",
+    "description": "Existing capability: sdkexamples-soap-8243"
+  },
+  {
+    "name": "sdkexamples-soap-2308",
+    "description": "Existing capability: sdkexamples-soap-2308"
+  },
+  {
+    "name": "sdkexamples-shampoo-3801",
+    "description": "Existing capability: sdkexamples-shampoo-3801"
+  },
+  {
+    "name": "___sentinel___",
+    "description": "Existing capability: ___sentinel___"
+  },
+  {
+    "name": "e2eTest-factory-Cap-1005",
+    "description": "Existing capability: e2eTest-factory-Cap-1005"
+  },
+  {
+    "name": "sdkexamples-shampoo-5651",
+    "description": "Existing capability: sdkexamples-shampoo-5651"
+  },
+  {
+    "name": "sdkexamples-shampoo-4802",
+    "description": "Existing capability: sdkexamples-shampoo-4802"
+  },
+  {
+    "name": "sdkexamples-shampoo-2135",
+    "description": "Existing capability: sdkexamples-shampoo-2135"
+  },
+  {
+    "name": "sdkexamples-soap-6405",
+    "description": "Existing capability: sdkexamples-soap-6405"
+  },
+  {
+    "name": "sdkexamples-soap-7119",
+    "description": "Existing capability: sdkexamples-soap-7119"
+  },
+  {
+    "name": "e2eTest-line-Cap-2156",
+    "description": "Existing capability: e2eTest-line-Cap-2156"
+  },
+  {
+    "name": "sdkexamples-soap-4182",
+    "description": "Existing capability: sdkexamples-soap-4182"
+  },
+  {
+    "name": "sdkexamples-shampoo-9840",
+    "description": "Existing capability: sdkexamples-shampoo-9840"
+  },
+  {
+    "name": "sdkexamples-shampoo-5882",
+    "description": "Existing capability: sdkexamples-shampoo-5882"
+  },
+  {
+    "name": "sdkexamples-soap-4022",
+    "description": "Existing capability: sdkexamples-soap-4022"
+  },
+  {
+    "name": "sdkexamples-soap-4784",
+    "description": "Existing capability: sdkexamples-soap-4784"
+  },
+  {
+    "name": "e2eTest-line-Cap-0444",
+    "description": "Existing capability: e2eTest-line-Cap-0444"
+  },
+  {
+    "name": "Fuzz_2_1003",
+    "description": "Existing capability: Fuzz_2_1003"
+  },
+  {
+    "name": "Fuzz_0_1003",
+    "description": "Existing capability: Fuzz_0_1003"
+  },
+  {
+    "name": "sdkexamples-shampoo-9984",
+    "description": "Existing capability: sdkexamples-shampoo-9984"
+  },
+  {
+    "name": "nice2-Shampoo",
+    "description": "Existing capability: nice2-Shampoo"
+  },
+  {
+    "name": "e2eTest-line-Cap-2150",
+    "description": "Existing capability: e2eTest-line-Cap-2150"
+  },
+  {
+    "name": "sdkexamples-shampoo-9079",
+    "description": "Existing capability: sdkexamples-shampoo-9079"
+  },
+  {
+    "name": "sdkexamples-soap-7574",
+    "description": "Existing capability: sdkexamples-soap-7574"
+  },
+  {
+    "name": "sdkexamples-soap-6578",
+    "description": "Existing capability: sdkexamples-soap-6578"
+  },
+  {
+    "name": "sdkexamples-shampoo-4542",
+    "description": "SDK generated shampoo manufacturing capability"
+  },
+  {
+    "name": "e2eTest-line-Cap-2153",
+    "description": "Existing capability: e2eTest-line-Cap-2153"
+  },
+  {
+    "name": "sdkexamples-soap-2848",
+    "description": "Existing capability: sdkexamples-soap-2848"
+  },
+  {
+    "name": "sdkexamples-shampoo-2597",
+    "description": "Existing capability: sdkexamples-shampoo-2597"
+  },
+  {
+    "name": "e2eTest-factory-Cap-1842",
+    "description": "Existing capability: e2eTest-factory-Cap-1842"
+  },
+  {
+    "name": "Detergent",
+    "description": "Existing capability: Detergent"
+  },
+  {
+    "name": "sdkexamples-shampoo-9291",
+    "description": "Existing capability: sdkexamples-shampoo-9291"
+  },
+  {
+    "name": "sdkexamples-soap-2205",
+    "description": "Existing capability: sdkexamples-soap-2205"
+  },
+  {
+    "name": "Fuzz_1_0411",
+    "description": "Existing capability: Fuzz_1_0411"
+  },
+  {
+    "name": "sdkexamples-shampoo-6457",
+    "description": "Existing capability: sdkexamples-shampoo-6457"
+  },
+  {
+    "name": "sdkexamples-soap-1702",
+    "description": "Existing capability: sdkexamples-soap-1702"
+  },
+  {
+    "name": "sdkexamples-soap-8601",
+    "description": "Existing capability: sdkexamples-soap-8601"
+  },
+  {
+    "name": "sdkexamples-shampoo-6203",
+    "description": "Existing capability: sdkexamples-shampoo-6203"
+  },
+  {
+    "name": "sdkexamples-shampoo-1666",
+    "description": "Existing capability: sdkexamples-shampoo-1666"
+  },
+  {
+    "name": "sdkexamples-shampoo-6153",
+    "description": "Existing capability: sdkexamples-shampoo-6153"
+  },
+  {
+    "name": "sdkexamples-shampoo-5842",
+    "description": "Existing capability: sdkexamples-shampoo-5842"
+  },
+  {
+    "name": "AAg-GPU Enabled",
+    "description": "Existing capability: AAg-GPU Enabled"
+  },
+  {
+    "name": "e2eTest-factory-Cap-0844",
+    "description": "Existing capability: e2eTest-factory-Cap-0844"
+  },
+  {
+    "name": "sdkexamples-shampoo-6924",
+    "description": "Existing capability: sdkexamples-shampoo-6924"
+  },
+  {
+    "name": "sdkexamples-soap-5854",
+    "description": "Existing capability: sdkexamples-soap-5854"
+  },
+  {
+    "name": "e2eTest-factory-Cap-0453",
+    "description": "e2eTest-factory-Cap-0453"
+  },
+  {
+    "name": "sdkexamples-shampoo-3898",
+    "description": "SDK generated shampoo manufacturing capability"
+  },
+  {
+    "name": "sdkexamples-soap-7355",
+    "description": "Existing capability: sdkexamples-soap-7355"
+  },
+  {
+    "name": "jd--17",
+    "description": "Existing capability: jd--17"
+  },
+  {
+    "name": "e2eTest-line-Cap-2158",
+    "description": "Existing capability: e2eTest-line-Cap-2158"
+  },
+  {
+    "name": "sdkexamples-shampoo-9714",
+    "description": "Existing capability: sdkexamples-shampoo-9714"
+  },
+  {
+    "name": "sdkexamples-shampoo-8487",
+    "description": "Existing capability: sdkexamples-shampoo-8487"
+  },
+  {
+    "name": "sdkexamples-soap-1056",
+    "description": "Existing capability: sdkexamples-soap-1056"
+  },
+  {
+    "name": "e2eTest-factory-Cap-0734",
+    "description": "Existing capability: e2eTest-factory-Cap-0734"
+  },
+  {
+    "name": "sdkexamples-shampoo-5516",
+    "description": "SDK generated shampoo manufacturing capability"
+  },
+  {
+    "name": "e2eTest-line-Cap-0844",
+    "description": "Existing capability: e2eTest-line-Cap-0844"
+  },
+  {
+    "name": "sdkexamples-shampoo-6526",
+    "description": "Existing capability: sdkexamples-shampoo-6526"
+  },
+  {
+    "name": "sdkexamples-soap-3603",
+    "description": "Existing capability: sdkexamples-soap-3603"
+  },
+  {
+    "name": "Fuzz_0_0336",
+    "description": "Existing capability: Fuzz_0_0336"
+  },
+  {
+    "name": "e2eTest-line-Cap-1842",
+    "description": "Existing capability: e2eTest-line-Cap-1842"
+  },
+  {
+    "name": "e2eTest-line-Cap-1846",
+    "description": "Existing capability: e2eTest-line-Cap-1846"
+  },
+  {
+    "name": "sdkexamples-shampoo-7843",
+    "description": "Existing capability: sdkexamples-shampoo-7843"
+  },
+  {
+    "name": "Fuzz_3_0406",
+    "description": "Existing capability: Fuzz_3_0406"
+  },
+  {
+    "name": "sdkexamples-soap-7477",
+    "description": "Existing capability: sdkexamples-soap-7477"
+  },
+  {
+    "name": "sdkexamples-shampoo-2123",
+    "description": "Existing capability: sdkexamples-shampoo-2123"
+  },
+  {
+    "name": "sdkexamples-soap-7917",
+    "description": "Existing capability: sdkexamples-soap-7917"
+  },
+  {
+    "name": "Fuzz_1_0406",
+    "description": "Existing capability: Fuzz_1_0406"
+  },
+  {
+    "name": "sdkexamples-shampoo-8833",
+    "description": "Existing capability: sdkexamples-shampoo-8833"
+  },
+  {
+    "name": "Toothpaste",
+    "description": "Existing capability: Toothpaste"
+  },
+  {
+    "name": "sdkexamples-shampoo-2878",
+    "description": "Existing capability: sdkexamples-shampoo-2878"
+  },
+  {
+    "name": "sdkexamples-soap-7132",
+    "description": "Existing capability: sdkexamples-soap-7132"
+  },
+  {
+    "name": "sdkexamples-soap-7167",
+    "description": "Existing capability: sdkexamples-soap-7167"
+  },
+  {
+    "name": "sdkexamples-soap-4843",
+    "description": "Existing capability: sdkexamples-soap-4843"
+  },
+  {
+    "name": "jd--02",
+    "description": "Existing capability: jd--02"
+  },
+  {
+    "name": "jiaduaks0925-soap",
+    "description": "Existing capability: jiaduaks0925-soap"
+  },
+  {
+    "name": "sdkexamples-soap-6921",
+    "description": "Existing capability: sdkexamples-soap-6921"
+  },
+  {
+    "name": "sdkexamples-shampoo-8136",
+    "description": "Existing capability: sdkexamples-shampoo-8136"
+  },
+  {
+    "name": "sdkexamples-soap-4335",
+    "description": "Existing capability: sdkexamples-soap-4335"
+  },
+  {
+    "name": "sdkexamples-soap-1330",
+    "description": "Existing capability: sdkexamples-soap-1330"
+  },
+  {
+    "name": "Fuzz_3_0350",
+    "description": "Existing capability: Fuzz_3_0350"
+  },
+  {
+    "name": "sdkexamples-soap-6510",
+    "description": "Existing capability: sdkexamples-soap-6510"
+  },
+  {
+    "name": "jd--16",
+    "description": "Existing capability: jd--16"
+  },
+  {
+    "name": "loadtest-shampoo",
+    "description": "Existing capability: loadtest-shampoo"
+  },
+  {
+    "name": "sdkexamples-shampoo-6930",
+    "description": "Existing capability: sdkexamples-shampoo-6930"
+  },
+  {
+    "name": "sdkexamples-shampoo-7276",
+    "description": "Existing capability: sdkexamples-shampoo-7276"
+  },
+  {
+    "name": "sdkexamples-shampoo-9272",
+    "description": "Existing capability: sdkexamples-shampoo-9272"
+  },
+  {
+    "name": "mchichili-Soap",
+    "description": "Existing capability: mchichili-Soap"
+  },
+  {
+    "name": "sdkexamples-soap-2619",
+    "description": "Existing capability: sdkexamples-soap-2619"
+  },
+  {
+    "name": "Fuzz_0_0349",
+    "description": "Existing capability: Fuzz_0_0349"
+  },
+  {
+    "name": "sdkexamples-soap-6087",
+    "description": "Existing capability: sdkexamples-soap-6087"
+  },
+  {
+    "name": "sdkexamples-soap-9789",
+    "description": "SDK generated soap manufacturing capability"
+  },
+  {
+    "name": "e2eTest-line-Cap-2149",
+    "description": "Existing capability: e2eTest-line-Cap-2149"
+  },
+  {
+    "name": "e2eTest-line-Cap-1841",
+    "description": "Existing capability: e2eTest-line-Cap-1841"
+  },
+  {
+    "name": "sdkexamples-shampoo-7036",
+    "description": "Existing capability: sdkexamples-shampoo-7036"
+  },
+  {
+    "name": "sdkexamples-shampoo-3302",
+    "description": "Existing capability: sdkexamples-shampoo-3302"
+  },
+  {
+    "name": "sdkexamples-soap-7261",
+    "description": "SDK generated soap manufacturing capability"
+  },
+  {
+    "name": "sdkexamples-soap-3532",
+    "description": "SDK generated soap manufacturing capability"
+  }
+]
