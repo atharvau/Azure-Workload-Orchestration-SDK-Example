@@ -10,7 +10,9 @@ from azure.core.exceptions import HttpResponseError
 
 def retry_operation(operation, max_attempts=3, delay_seconds=30):
     """
-    Retry an operation with exponential backoff
+    Utility function to retry operations that might fail due to transient errors.
+    Uses exponential backoff to avoid overwhelming the service.
+    Used for resource creation operations that may temporarily fail.
     """
     for attempt in range(max_attempts):
         try:
@@ -51,7 +53,9 @@ Please set up authentication by either:
 
 def generate_random_semantic_version(include_prerelease=False, include_build=False):
     """
-    Generate a random semantic version string
+    Generates unique version numbers for schemas and solution templates.
+    Uses semantic versioning format (major.minor.patch) to avoid naming conflicts.
+    Each run creates unique resource names to prevent Azure resource conflicts.
     """
     major = random.randint(0, 10)
     minor = random.randint(0, 20)
@@ -83,6 +87,12 @@ def get_next_version():
     return version
 
 def create_schema(client, resource_group_name, subscription_id):
+    """
+    Creates a new schema resource in Azure Workload Orchestration.
+    This is the foundation step - defines the container for configuration rules.
+    Must be created before creating schema versions. Think of it as creating a "database" 
+    before adding "tables" (schema versions).
+    """
     try:
         version = generate_random_semantic_version()
         schema_name = f"sdkexamples-schema-v{version}"
@@ -101,6 +111,12 @@ def create_schema(client, resource_group_name, subscription_id):
         raise
 
 def create_schema_version(client, resource_group_name, schema_name):
+    """
+    Creates a version for an existing schema with specific YAML configuration rules.
+    PREREQUISITE: Schema must already exist (created by create_schema).
+    This defines the actual validation rules for configuration values that will be used
+    by solution templates. Contains data types, required fields, and editing permissions.
+    """
     try:
         # Use semantic versioning
         version = generate_random_semantic_version()
@@ -171,6 +187,12 @@ def create_schema_version(client, resource_group_name, schema_name):
         raise
 
 def create_solution_template(client, resource_group_name, capabilities=None):
+    """
+    Creates a solution template - a blueprint for deployable solutions.
+    Links to specific capabilities (like "soap" or "shampoo" manufacturing).
+    This is the template container - you need to create versions of it next.
+    Think of it as creating a "product line" before creating specific "product versions".
+    """
     try:
         if capabilities is None:
             capabilities = [SINGLE_CAPABILITY_NAME]
@@ -193,6 +215,12 @@ def create_solution_template(client, resource_group_name, capabilities=None):
         raise
 
 def create_solution_template_version(client, resource_group_name, solution_template_name, schema_name, schema_version):
+    """
+    Creates a deployable version of a solution template.
+    PREREQUISITES: Solution template and schema version must exist.
+    This links the schema rules to actual deployment configurations and Helm charts.
+    Contains the "recipe" for how to deploy the solution on targets.
+    """
     try:
         # Generate a clean version number without pre-release or build info
         version = generate_random_semantic_version(include_prerelease=False, include_build=False)
@@ -245,6 +273,11 @@ configs:
         raise
 
 def create_target(client, resource_group_name, capabilities=None):
+    """
+    Creates a target - represents a physical location/environment where solutions will be deployed.
+    Links to specific capabilities and requires an Azure Context for coordination.
+    Think of this as registering a "factory floor" or "production line" where solutions will run.
+    """
     # Process capabilities at the function level to avoid scoping issues
     if capabilities is None:
         capabilities = [SINGLE_CAPABILITY_NAME]
@@ -295,7 +328,10 @@ def create_target(client, resource_group_name, capabilities=None):
 
 def review_target(client, resource_group_name, target_name, solution_template_version_id):
     """
-    Review a target deployment using a solution template version
+    Reviews a solution template version for deployment on a target.
+    PREREQUISITE: Target and solution template version must exist.
+    This validates the solution can be deployed and creates a "solution version" 
+    ready for publishing. Like getting deployment approval before going live.
     """
     def review_operation():
         print(f"Starting review for target {target_name}")
@@ -348,7 +384,10 @@ def review_target(client, resource_group_name, target_name, solution_template_ve
 
 def publish_target(client, resource_group_name, target_name, solution_version_id):
     """
-    Publish a solution version to a target
+    Publishes a reviewed solution version to make it available for installation.
+    PREREQUISITE: Solution must be reviewed first (review_target).
+    This moves the solution from "reviewed" state to "published" state.
+    Like releasing software from staging to production-ready.
     """
     def publish_operation():
         print(f"Publishing solution version to target {target_name}")
@@ -370,7 +409,10 @@ def publish_target(client, resource_group_name, target_name, solution_version_id
 
 def install_target(client, resource_group_name, target_name, solution_version_id):
     """
-    Install a published solution version on a target
+    Installs a published solution version on the target environment.
+    PREREQUISITE: Solution must be published first (publish_target).
+    This is the final step - actually deploying and running the solution.
+    Like installing and starting the application in production.
     """
     def install_operation():
         print(f"Installing solution version on target {target_name}")
@@ -395,7 +437,9 @@ def install_target(client, resource_group_name, target_name, solution_version_id
 
 def create_configuration_api_call(credential, subscription_id, resource_group, config_name, solution_name, version, config_values):
     """
-    Make PUT call to Azure Configuration API to set configuration values
+    Sets dynamic configuration values for a solution using direct REST API calls.
+    This provides configuration data that the deployed solution will use at runtime.
+    Called before reviewing the target to ensure configuration is available.
     """
     try:
         # Get bearer token from DefaultAzureCredential
@@ -451,7 +495,8 @@ def create_configuration_api_call(credential, subscription_id, resource_group, c
 
 def get_configuration_api_call(credential, subscription_id, resource_group, config_name, solution_name, version):
     """
-    Make GET call to Azure Configuration API to retrieve current configuration values
+    Retrieves and verifies configuration values that were set via the Configuration API.
+    Used to confirm that configuration was properly stored and is available to the solution.
     """
     try:
         # Get bearer token from DefaultAzureCredential
@@ -495,7 +540,9 @@ def get_configuration_api_call(credential, subscription_id, resource_group, conf
 
 def get_existing_context(client, resource_group_name, context_name):
     """
-    Fetch existing Azure context and return its capabilities
+    Fetches an existing Azure Context to get current capabilities.
+    Contexts coordinate capabilities across multiple targets in an organization.
+    This allows us to add new capabilities while preserving existing ones.
     """
     try:
         print(f"Fetching existing context: {context_name}")
@@ -524,7 +571,9 @@ def get_existing_context(client, resource_group_name, context_name):
 
 def generate_single_random_capability():
     """
-    Generate a single random Shampoo or Soap capability
+    Generates a unique manufacturing capability (like "soap-1234" or "shampoo-5678").
+    Each run creates a new capability to demonstrate adding capabilities to contexts.
+    Capabilities represent what a target/facility can manufacture or process.
     """
     capability_types = ["shampoo", "soap"]
     cap_type = random.choice(capability_types)
@@ -540,7 +589,9 @@ def generate_single_random_capability():
 
 def merge_capabilities_with_uniqueness(existing_capabilities, new_capabilities):
     """
-    Merge capabilities ensuring no duplicates by name
+    Safely merges new capabilities with existing ones, avoiding duplicates.
+    Ensures capability names remain unique across the context.
+    Used when updating contexts to add new manufacturing capabilities.
     """
     print(f"Merging capabilities: {len(existing_capabilities)} existing + {len(new_capabilities)} new")
     
@@ -607,7 +658,9 @@ def save_capabilities_to_json(capabilities, filename="context-capabilities.json"
 
 def create_or_update_context_with_hierarchies(client, resource_group_name, context_name, capabilities):
     """
-    Create or update Azure context with capabilities and hierarchies
+    Creates or updates an Azure Context with capabilities and organizational hierarchies.
+    Contexts provide centralized coordination of capabilities across multiple targets.
+    Hierarchies define organizational levels (country -> region -> factory -> line).
     """
     def context_operation():
         hierarchies = [
@@ -648,12 +701,13 @@ def create_or_update_context_with_hierarchies(client, resource_group_name, conte
 
 def manage_azure_context(client, resource_group_name=CONTEXT_RESOURCE_GROUP, context_name=CONTEXT_NAME):
     """
-    Complete context management workflow:
-    1. Fetch existing context
-    2. Generate single random capability
-    3. Merge with uniqueness
-    4. Save to JSON
-    5. Update context
+    Complete workflow for managing Azure Context capabilities:
+    1. Fetches existing context and its current capabilities
+    2. Generates a new unique capability for this run
+    3. Merges new capability with existing ones (no duplicates)
+    4. Saves capability list to JSON file for reference
+    5. Updates the context with the merged capability list
+    This ensures each run adds a new capability while preserving existing ones.
     """
     try:
         # Step 1: Fetch existing context

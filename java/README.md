@@ -187,16 +187,3 @@ Installing solution version /subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/
 Install operation completed successfully.
 ```
 
-## Language-Specific Notes
-
-### LRO Response Workaround for `reviewTarget`
-
-The `reviewTarget` operation is a Long-Running Operation (LRO) that is expected to return information about the newly created solution version. However, in the current SDK version, the final response from the LRO poller is sometimes not fully populated with the expected `reviewId` and `solutionVersionId`.
-
-To work around this, this example implements the following logic:
-1. It initiates the `reviewSolutionVersion` operation.
-2. After the review is triggered, it calls `solutionVersions().listBySolution()` to get a complete list of all solution versions for the target.
-3. It then iterates through this list to find the version that matches the `solutionTemplateVersionId` used in the review step.
-4. By finding the correct version in the list, it can reliably extract the full `solutionVersionId` required for the subsequent `publish` and `install` steps.
-
-This ensures the workflow can proceed reliably even if the initial LRO response is incomplete. For more details, see the related GitHub Issue: [Issue #XXXX](https://github.com/Azure/azure-sdk-for-java/issues/XXXX).

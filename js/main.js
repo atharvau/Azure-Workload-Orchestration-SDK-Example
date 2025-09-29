@@ -18,6 +18,9 @@ const SINGLE_CAPABILITY_NAME = "sdkexamples-soap";
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Utility function to retry operations that might fail due to transient errors.
+// Uses exponential backoff to avoid overwhelming the service.
+// Used for resource creation operations that may temporarily fail.
 async function retryOperation(operation, maxAttempts = 3, delaySeconds = 30) {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
@@ -35,6 +38,9 @@ async function retryOperation(operation, maxAttempts = 3, delaySeconds = 30) {
     }
 }
 
+// Generates unique version numbers for schemas and solution templates.
+// Uses semantic versioning format (major.minor.patch) to avoid naming conflicts.
+// Each run creates unique resource names to prevent Azure resource conflicts.
 function generateRandomSemanticVersion(includePrerelease = false, includeBuild = false) {
     const major = Math.floor(Math.random() * 11);
     const minor = Math.floor(Math.random() * 21);
@@ -55,6 +61,10 @@ function generateRandomSemanticVersion(includePrerelease = false, includeBuild =
 
 // --- SDK Interaction Functions ---
 
+// Creates a new schema resource in Azure Workload Orchestration.
+// This is the foundation step - defines the container for configuration rules.
+// Must be created before creating schema versions. Think of it as creating a "database" 
+// before adding "tables" (schema versions).
 async function createSchema(client, resourceGroupName) {
     const version = generateRandomSemanticVersion();
     const schemaName = `sdkexamples-schema-v${version}`;
@@ -65,6 +75,10 @@ async function createSchema(client, resourceGroupName) {
     });
 }
 
+// Creates a version for an existing schema with specific YAML configuration rules.
+// PREREQUISITE: Schema must already exist (created by createSchema).
+// This defines the actual validation rules for configuration values that will be used
+// by solution templates. Contains data types, required fields, and editing permissions.
 async function createSchemaVersion(client, resourceGroupName, schemaName) {
     const version = generateRandomSemanticVersion();
     const schemaVersionName = version;
@@ -84,6 +98,10 @@ async function createSchemaVersion(client, resourceGroupName, schemaName) {
     });
 }
 
+// Creates a solution template - a blueprint for deployable solutions.
+// Links to specific capabilities (like "soap" or "shampoo" manufacturing).
+// This is the template container - you need to create versions of it next.
+// Think of it as creating a "product line" before creating specific "product versions".
 async function createSolutionTemplate(client, resourceGroupName, capabilities) {
     const solutionTemplateName = "sdkexamples-solution1";
     console.log(`Creating solution template '${solutionTemplateName}'...`);
@@ -96,6 +114,10 @@ async function createSolutionTemplate(client, resourceGroupName, capabilities) {
     });
 }
 
+// Creates a deployable version of a solution template.
+// PREREQUISITES: Solution template and schema version must exist.
+// This links the schema rules to actual deployment configurations and Helm charts.
+// Contains the "recipe" for how to deploy the solution on targets.
 async function createSolutionTemplateVersion(client, resourceGroupName, solutionTemplateName, schemaName, schemaVersion) {
     const version = generateRandomSemanticVersion(false, false);
     const solutionTemplateVersionName = version;
@@ -141,6 +163,9 @@ configs:
     return result;
 }
 
+// Creates a target - represents a physical location/environment where solutions will be deployed.
+// Links to specific capabilities and requires an Azure Context for coordination.
+// Think of this as registering a "factory floor" or "production line" where solutions will run.
 async function createTarget(client, resourceGroupName, capabilities) {
     const targetName = "sdkbox-m23";
     console.log(`Creating target '${targetName}'...`);
@@ -169,6 +194,10 @@ async function createTarget(client, resourceGroupName, capabilities) {
     return await retryOperation(createOperation);
 }
 
+// Reviews a solution template version for deployment on a target.
+// PREREQUISITE: Target and solution template version must exist.
+// This validates the solution can be deployed and creates a "solution version" 
+// ready for publishing. Like getting deployment approval before going live.
 async function reviewTarget(client, resourceGroupName, targetName, solutionTemplateVersionId) {
     console.log(`Starting review for target ${targetName} with template version ID: ${solutionTemplateVersionId}`);
     
@@ -228,6 +257,10 @@ async function reviewTarget(client, resourceGroupName, targetName, solutionTempl
     }
 }
 
+// Publishes a reviewed solution version to make it available for installation.
+// PREREQUISITE: Solution must be reviewed first (reviewTarget).
+// This moves the solution from "reviewed" state to "published" state.
+// Like releasing software from staging to production-ready.
 async function publishTarget(client, resourceGroupName, targetName, solutionVersionId) {
     console.log(`Publishing solution version to target ${targetName}...`);
     const publishOperation = async () => {
@@ -240,6 +273,10 @@ async function publishTarget(client, resourceGroupName, targetName, solutionVers
     return await retryOperation(publishOperation);
 }
 
+// Installs a published solution version on the target environment.
+// PREREQUISITE: Solution must be published first (publishTarget).
+// This is the final step - actually deploying and running the solution.
+// Like installing and starting the application in production.
 async function installTarget(client, resourceGroupName, targetName, solutionVersionId) {
     console.log(`Installing solution on target ${targetName}...`);
     const installOperation = async () => {
@@ -252,6 +289,9 @@ async function installTarget(client, resourceGroupName, targetName, solutionVers
     return await retryOperation(installOperation);
 }
 
+// Sets dynamic configuration values for a solution using direct REST API calls.
+// This provides configuration data that the deployed solution will use at runtime.
+// Called before reviewing the target to ensure configuration is available.
 async function createConfigurationApiCall(credential, subscriptionId, resourceGroup, configName, solutionName, configValues) {
     const token = await credential.getToken("https://management.azure.com/.default");
     const url = `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroup}/providers/Microsoft.Edge/configurations/${configName}/DynamicConfigurations/${solutionName}/versions/version1?api-version=2024-06-01-preview`;
@@ -270,6 +310,8 @@ async function createConfigurationApiCall(credential, subscriptionId, resourceGr
     }
 }
 
+// Retrieves and verifies configuration values that were set via the Configuration API.
+// Used to confirm that configuration was properly stored and is available to the solution.
 async function getConfigurationApiCall(credential, subscriptionId, resourceGroup, configName, solutionName) {
     try {
         const token = await credential.getToken("https://management.azure.com/.default");
@@ -285,6 +327,9 @@ async function getConfigurationApiCall(credential, subscriptionId, resourceGroup
     }
 }
 
+// Fetches an existing Azure Context to get current capabilities.
+// Contexts coordinate capabilities across multiple targets in an organization.
+// This allows us to add new capabilities while preserving existing ones.
 async function getExistingContext(client, resourceGroupName, contextName) {
     try {
         console.log(`DEBUG: Fetching existing context: ${contextName}`);
@@ -302,6 +347,9 @@ async function getExistingContext(client, resourceGroupName, contextName) {
     }
 }
 
+// Generates a unique manufacturing capability (like "soap-1234" or "shampoo-5678").
+// Each run creates a new capability to demonstrate adding capabilities to contexts.
+// Capabilities represent what a target/facility can manufacture or process.
 function generateSingleRandomCapability() {
     const capabilityTypes = ["shampoo", "soap"];
     const capType = capabilityTypes[Math.floor(Math.random() * capabilityTypes.length)];
@@ -311,6 +359,9 @@ function generateSingleRandomCapability() {
     return capability;
 }
 
+// Safely merges new capabilities with existing ones, avoiding duplicates.
+// Ensures capability names remain unique across the context.
+// Used when updating contexts to add new manufacturing capabilities.
 function mergeCapabilitiesWithUniqueness(existingCapabilities, newCapabilities) {
     const merged = new Map();
     [...existingCapabilities, ...newCapabilities].forEach(cap => {
@@ -323,6 +374,9 @@ function mergeCapabilitiesWithUniqueness(existingCapabilities, newCapabilities) 
     return mergedArray;
 }
 
+// Creates or updates an Azure Context with capabilities and organizational hierarchies.
+// Contexts provide centralized coordination of capabilities across multiple targets.
+// Hierarchies define organizational levels (country -> region -> factory -> line).
 async function createOrUpdateContextWithHierarchies(client, resourceGroupName, contextName, capabilities) {
     const contextOperation = async () => {
         const hierarchies = [
@@ -340,6 +394,12 @@ async function createOrUpdateContextWithHierarchies(client, resourceGroupName, c
     return await retryOperation(contextOperation);
 }
 
+// Complete workflow for managing Azure Context capabilities:
+// 1. Fetches existing context and its current capabilities
+// 2. Generates a new unique capability for this run
+// 3. Merges new capability with existing ones (no duplicates)
+// 4. Updates the context with the merged capability list
+// This ensures each run adds a new capability while preserving existing ones.
 async function manageAzureContext(client) {
     try {
         const existingCapabilities = await getExistingContext(client, CONTEXT_RESOURCE_GROUP, CONTEXT_NAME);

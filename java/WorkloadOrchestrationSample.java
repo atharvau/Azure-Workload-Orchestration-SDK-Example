@@ -159,6 +159,9 @@ public class WorkloadOrchestrationSample {
         }
     }
     
+    // Utility method to retry operations that might fail due to transient errors.
+    // Uses exponential backoff to avoid overwhelming the service.
+    // Used for resource creation operations that may temporarily fail.
     private static <T> T retryOperation(Supplier<T> operation) throws InterruptedException {
         int maxAttempts = 3;
         int delaySeconds = 30;
@@ -178,10 +181,17 @@ public class WorkloadOrchestrationSample {
         throw new IllegalStateException("Should not reach here");
     }
 
+    // Generates unique version numbers for schemas and solution templates.
+    // Uses semantic versioning format (major.minor.patch) to avoid naming conflicts.
+    // Each run creates unique resource names to prevent Azure resource conflicts.
     private static String generateRandomSemanticVersion() {
         return String.format("%d.%d.%d", RANDOM.nextInt(11), RANDOM.nextInt(21), RANDOM.nextInt(101));
     }
 
+    // Creates a new schema resource in Azure Workload Orchestration.
+    // This is the foundation step - defines the container for configuration rules.
+    // Must be created before creating schema versions. Think of it as creating a "database" 
+    // before adding "tables" (schema versions).
     private static Schema createSchema(WorkloadOrchestrationManager manager, String resourceGroupName) {
         String schemaName = "sdkexamples-schema-v" + generateRandomSemanticVersion();
         return manager.schemas().define(schemaName)
@@ -191,6 +201,10 @@ public class WorkloadOrchestrationSample {
             .create();
     }
 
+    // Creates a version for an existing schema with specific YAML configuration rules.
+    // PREREQUISITE: Schema must already exist (created by createSchema).
+    // This defines the actual validation rules for configuration values that will be used
+    // by solution templates. Contains data types, required fields, and editing permissions.
     private static SchemaVersion createSchemaVersion(WorkloadOrchestrationManager manager, String resourceGroupName, String schemaName) {
         String schemaVersionName = generateRandomSemanticVersion();
         String schemaValue = "rules:\n" +
@@ -251,6 +265,10 @@ public class WorkloadOrchestrationSample {
             .create();
     }
 
+    // Creates a solution template - a blueprint for deployable solutions.
+    // Links to specific capabilities (like "soap" or "shampoo" manufacturing).
+    // This is the template container - you need to create versions of it next.
+    // Think of it as creating a "product line" before creating specific "product versions".
     private static SolutionTemplate createSolutionTemplate(WorkloadOrchestrationManager manager, String resourceGroupName, List<String> capabilities) {
         String solutionTemplateName = "sdkexamples-solution123";
         return manager.solutionTemplates().define(solutionTemplateName)
@@ -262,6 +280,10 @@ public class WorkloadOrchestrationSample {
             .create();
     }
 
+    // Creates a deployable version of a solution template.
+    // PREREQUISITES: Solution template and schema version must exist.
+    // This links the schema rules to actual deployment configurations and Helm charts.
+    // Contains the "recipe" for how to deploy the solution on targets.
     private static String createSolutionTemplateVersion(WorkloadOrchestrationManager manager, String resourceGroupName, String solutionTemplateName, String schemaName, String schemaVersion) throws InterruptedException {
         return retryOperation(() -> {
             String version = generateRandomSemanticVersion();
@@ -312,6 +334,9 @@ public class WorkloadOrchestrationSample {
         });
     }
     
+    // Creates a target - represents a physical location/environment where solutions will be deployed.
+    // Links to specific capabilities and requires an Azure Context for coordination.
+    // Think of this as registering a "factory floor" or "production line" where solutions will run.
     private static Target createTarget(WorkloadOrchestrationManager manager, String resourceGroupName, List<String> capabilities) throws InterruptedException {
         return retryOperation(() -> {
             String targetName = "sdkbox-m23";
@@ -340,6 +365,10 @@ public class WorkloadOrchestrationSample {
         });
     }
 
+    // Reviews a solution template version for deployment on a target.
+    // PREREQUISITE: Target and solution template version must exist.
+    // This validates the solution can be deployed and creates a "solution version" 
+    // ready for publishing. Like getting deployment approval before going live.
     private static String reviewTarget(WorkloadOrchestrationManager manager, String resourceGroupName, String targetName, String solutionTemplateVersionId) throws InterruptedException {
          return retryOperation(() -> {
             System.out.printf("Starting review for target %s%n", targetName);
@@ -411,7 +440,12 @@ public class WorkloadOrchestrationSample {
         System.out.println("------------------------------------");
         return reviewResult.id();
         });
-    }    private static void publishTarget(WorkloadOrchestrationManager manager, String resourceGroupName, String targetName, String solutionVersionId) throws InterruptedException {
+    }    
+    // Publishes a reviewed solution version to make it available for installation.
+    // PREREQUISITE: Solution must be reviewed first (reviewTarget).
+    // This moves the solution from "reviewed" state to "published" state.
+    // Like releasing software from staging to production-ready.
+    private static void publishTarget(WorkloadOrchestrationManager manager, String resourceGroupName, String targetName, String solutionVersionId) throws InterruptedException {
         retryOperation(() -> {
             System.out.printf("Publishing solution version %s to target %s%n", solutionVersionId, targetName);
             manager.targets().publishSolutionVersion(
@@ -424,6 +458,10 @@ public class WorkloadOrchestrationSample {
         });
     }
 
+    // Installs a published solution version on the target environment.
+    // PREREQUISITE: Solution must be published first (publishTarget).
+    // This is the final step - actually deploying and running the solution.
+    // Like installing and starting the application in production.
     private static void installTarget(WorkloadOrchestrationManager manager, String resourceGroupName, String targetName, String solutionVersionId) throws InterruptedException {
         retryOperation(() -> {
             System.out.printf("Installing solution version %s on target %s%n", solutionVersionId, targetName);

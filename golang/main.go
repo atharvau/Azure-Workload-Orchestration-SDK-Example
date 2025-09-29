@@ -52,7 +52,9 @@ type Capability struct {
 	Description string `json:"description"`
 }
 
-// retryOperation retries an operation with exponential backoff
+// Utility function to retry operations that might fail due to transient errors.
+// Uses exponential backoff to avoid overwhelming the service.
+// Used for resource creation operations that may temporarily fail.
 func retryOperation(operation func() error, maxAttempts int, delaySeconds int) error {
 	for attempt := 0; attempt < maxAttempts; attempt++ {
 		err := operation()
@@ -72,7 +74,9 @@ func retryOperation(operation func() error, maxAttempts int, delaySeconds int) e
 	return fmt.Errorf("operation failed after %d attempts", maxAttempts)
 }
 
-// generateRandomSemanticVersion generates a random semantic version string
+// Generates unique version numbers for schemas and solution templates.
+// Uses semantic versioning format (major.minor.patch) to avoid naming conflicts.
+// Each run creates unique resource names to prevent Azure resource conflicts.
 func generateRandomSemanticVersion(includePrerelease, includeBuild bool) string {
 	major := rand.Intn(11)
 	minor := rand.Intn(21)
@@ -120,7 +124,10 @@ func getNextVersion() int {
 	return version
 }
 
-// createSchema creates a new schema
+// Creates a new schema resource in Azure Workload Orchestration.
+// This is the foundation step - defines the container for configuration rules.
+// Must be created before creating schema versions. Think of it as creating a "database"
+// before adding "tables" (schema versions).
 func createSchema(ctx context.Context, client *armworkloadorchestration.SchemasClient, resourceGroupName, subscriptionID string) (*armworkloadorchestration.Schema, error) {
 	version := generateRandomSemanticVersion(false, false)
 	schemaName := fmt.Sprintf("sdkexamples-schema-v%s", version)
@@ -144,7 +151,10 @@ func createSchema(ctx context.Context, client *armworkloadorchestration.SchemasC
 	return &res.Schema, nil
 }
 
-// createSchemaVersion creates a new schema version
+// Creates a version for an existing schema with specific YAML configuration rules.
+// PREREQUISITE: Schema must already exist (created by createSchema).
+// This defines the actual validation rules for configuration values that will be used
+// by solution templates. Contains data types, required fields, and editing permissions.
 func createSchemaVersion(ctx context.Context, client *armworkloadorchestration.SchemaVersionsClient, resourceGroupName, schemaName string) (*armworkloadorchestration.SchemaVersion, error) {
 	version := generateRandomSemanticVersion(false, false)
 	schemaVersionName := version
@@ -221,7 +231,10 @@ func createSchemaVersion(ctx context.Context, client *armworkloadorchestration.S
 	return &res.SchemaVersion, nil
 }
 
-// createSolutionTemplate creates a new solution template
+// Creates a solution template - a blueprint for deployable solutions.
+// Links to specific capabilities (like "soap" or "shampoo" manufacturing).
+// This is the template container - you need to create versions of it next.
+// Think of it as creating a "product line" before creating specific "product versions".
 func createSolutionTemplate(ctx context.Context, client *armworkloadorchestration.SolutionTemplatesClient, resourceGroupName string, capabilities []string) (*armworkloadorchestration.SolutionTemplate, error) {
 	if capabilities == nil {
 		capabilities = []string{SINGLE_CAPABILITY_NAME}
@@ -256,7 +269,10 @@ func createSolutionTemplate(ctx context.Context, client *armworkloadorchestratio
 	return &res.SolutionTemplate, nil
 }
 
-// createSolutionTemplateVersion creates a new solution template version
+// Creates a deployable version of a solution template.
+// PREREQUISITES: Solution template and schema version must exist.
+// This links the schema rules to actual deployment configurations and Helm charts.
+// Contains the "recipe" for how to deploy the solution on targets.
 func createSolutionTemplateVersion(ctx context.Context, client *armworkloadorchestration.SolutionTemplatesClient, resourceGroupName, solutionTemplateName, schemaName, schemaVersion string) (*armworkloadorchestration.SolutionTemplatesClientCreateVersionResponse, error) {
 	version := generateRandomSemanticVersion(false, false)
 	solutionTemplateVersionName := version
@@ -319,7 +335,9 @@ configs:
 	return &res, nil
 }
 
-// createTarget creates a new target with retry logic
+// Creates a target - represents a physical location/environment where solutions will be deployed.
+// Links to specific capabilities and requires an Azure Context for coordination.
+// Think of this as registering a "factory floor" or "production line" where solutions will run.
 func createTarget(ctx context.Context, client *armworkloadorchestration.TargetsClient, resourceGroupName string, capabilities []string) (*armworkloadorchestration.Target, error) {
 	if capabilities == nil {
 		capabilities = []string{SINGLE_CAPABILITY_NAME}
@@ -427,7 +445,10 @@ func createTarget(ctx context.Context, client *armworkloadorchestration.TargetsC
 	return &target.Target, nil
 }
 
-// reviewTarget reviews a target deployment using a solution template version
+// Reviews a solution template version for deployment on a target.
+// PREREQUISITE: Target and solution template version must exist.
+// This validates the solution can be deployed and creates a "solution version"
+// ready for publishing. Like getting deployment approval before going live.
 func reviewTarget(ctx context.Context, client *armworkloadorchestration.TargetsClient, resourceGroupName, targetName, solutionTemplateVersionID string) (string, error) {
 	reviewOperation := func() error {
 		fmt.Printf("Starting review for target %s\n", targetName)
@@ -448,7 +469,10 @@ func reviewTarget(ctx context.Context, client *armworkloadorchestration.TargetsC
 	return solutionTemplateVersionID, nil
 }
 
-// publishTarget publishes a solution version to a target
+// Publishes a reviewed solution version to make it available for installation.
+// PREREQUISITE: Solution must be reviewed first (reviewTarget).
+// This moves the solution from "reviewed" state to "published" state.
+// Like releasing software from staging to production-ready.
 func publishTarget(ctx context.Context, client *armworkloadorchestration.TargetsClient, resourceGroupName, targetName, solutionVersionID string) error {
 	publishOperation := func() error {
 		fmt.Printf("Publishing solution version to target %s\n", targetName)
@@ -463,7 +487,10 @@ func publishTarget(ctx context.Context, client *armworkloadorchestration.Targets
 	return retryOperation(publishOperation, 3, 30)
 }
 
-// installTarget installs a published solution version on a target
+// Installs a published solution version on the target environment.
+// PREREQUISITE: Solution must be published first (publishTarget).
+// This is the final step - actually deploying and running the solution.
+// Like installing and starting the application in production.
 func installTarget(ctx context.Context, client *armworkloadorchestration.TargetsClient, resourceGroupName, targetName, solutionVersionID string) error {
 	installOperation := func() error {
 		fmt.Printf("Installing solution version on target %s\n", targetName)
@@ -478,7 +505,9 @@ func installTarget(ctx context.Context, client *armworkloadorchestration.Targets
 	return retryOperation(installOperation, 3, 30)
 }
 
-// createConfigurationAPICall makes PUT call to Azure Configuration API to set configuration values
+// Sets dynamic configuration values for a solution using direct REST API calls.
+// This provides configuration data that the deployed solution will use at runtime.
+// Called before reviewing the target to ensure configuration is available.
 func createConfigurationAPICall(credential azcore.TokenCredential, subscriptionID, resourceGroup, configName, solutionName, version string, configValues map[string]interface{}) error {
 	token, err := credential.GetToken(context.Background(), policy.TokenRequestOptions{
 		Scopes: []string{"https://management.azure.com/.default"},
@@ -555,7 +584,8 @@ func createConfigurationAPICall(credential azcore.TokenCredential, subscriptionI
 	return fmt.Errorf("configuration API call failed. Status: %d, Response: %s", resp.StatusCode, string(body))
 }
 
-// getConfigurationAPICall makes GET call to Azure Configuration API to retrieve current configuration values
+// Retrieves and verifies configuration values that were set via the Configuration API.
+// Used to confirm that configuration was properly stored and is available to the solution.
 func getConfigurationAPICall(credential azcore.TokenCredential, subscriptionID, resourceGroup, configName, solutionName, version string) error {
 	token, err := credential.GetToken(context.Background(), policy.TokenRequestOptions{
 		Scopes: []string{"https://management.azure.com/.default"},
@@ -617,7 +647,9 @@ func getConfigurationAPICall(credential azcore.TokenCredential, subscriptionID, 
 	return nil // Don't return error for GET failures as it might be expected
 }
 
-// getExistingContext fetches existing Azure context and returns its capabilities
+// Fetches an existing Azure Context to get current capabilities.
+// Contexts coordinate capabilities across multiple targets in an organization.
+// This allows us to add new capabilities while preserving existing ones.
 func getExistingContext(ctx context.Context, client *armworkloadorchestration.ContextsClient, resourceGroupName, contextName string) ([]Capability, error) {
 	fmt.Printf("DEBUG: Fetching existing context: %s\n", contextName)
 
@@ -642,7 +674,9 @@ func getExistingContext(ctx context.Context, client *armworkloadorchestration.Co
 	return existingCapabilities, nil
 }
 
-// generateSingleRandomCapability generates a single random Shampoo or Soap capability
+// Generates a unique manufacturing capability (like "soap-1234" or "shampoo-5678").
+// Each run creates a new capability to demonstrate adding capabilities to contexts.
+// Capabilities represent what a target/facility can manufacture or process.
 func generateSingleRandomCapability() Capability {
 	capabilityTypes := []string{"shampoo", "soap"}
 	capType := capabilityTypes[rand.Intn(len(capabilityTypes))]
@@ -657,7 +691,9 @@ func generateSingleRandomCapability() Capability {
 	return capability
 }
 
-// mergeCapabilitiesWithUniqueness merges capabilities ensuring no duplicates by name
+// Safely merges new capabilities with existing ones, avoiding duplicates.
+// Ensures capability names remain unique across the context.
+// Used when updating contexts to add new manufacturing capabilities.
 func mergeCapabilitiesWithUniqueness(existingCapabilities, newCapabilities []Capability) []Capability {
 	fmt.Println(strings.Repeat("=", 60))
 	fmt.Println("CAPABILITY MERGE PROCESS")
@@ -714,7 +750,9 @@ func saveCapabilitiesToJSON(capabilities []Capability, filename string) error {
 	return nil
 }
 
-// createOrUpdateContextWithHierarchies creates or updates Azure context with capabilities and hierarchies
+// Creates or updates an Azure Context with capabilities and organizational hierarchies.
+// Contexts provide centralized coordination of capabilities across multiple targets.
+// Hierarchies define organizational levels (country -> region -> factory -> line).
 func createOrUpdateContextWithHierarchies(ctx context.Context, client *armworkloadorchestration.ContextsClient, resourceGroupName, contextName string, capabilities []Capability) (*armworkloadorchestration.Context, error) {
 	contextOperation := func() error {
 		// Convert capabilities to string pointers with validation
@@ -788,7 +826,13 @@ func createOrUpdateContextWithHierarchies(ctx context.Context, client *armworklo
 	return &contextResp.Context, nil
 }
 
-// manageAzureContext complete context management workflow
+// Complete workflow for managing Azure Context capabilities:
+// 1. Fetches existing context and its current capabilities
+// 2. Generates a new unique capability for this run
+// 3. Merges new capability with existing ones (no duplicates)
+// 4. Saves capability list to JSON file for reference
+// 5. Updates the context with the merged capability list
+// This ensures each run adds a new capability while preserving existing ones.
 func manageAzureContext(ctx context.Context, client *armworkloadorchestration.ContextsClient, resourceGroupName, contextName string) (*armworkloadorchestration.Context, error) {
 	// Step 1: Fetch existing context
 	existingCapabilities, err := getExistingContext(ctx, client, resourceGroupName, contextName)

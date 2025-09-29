@@ -54,25 +54,15 @@ const (
     go run main.go
     ```
 
-## Sample Output
 
-Below is a sample output from a successful run of the application.
+
+## Output
 
 ```
-PS C:\Users\audapure\Projects\ConfigManager\SDK\sdktester\golang> go run main.go
-Starting Go workload orchestration application...
-Successfully authenticated using environment variables.
-Testing credential by requesting a token...
-Successfully obtained token
-Successfully authenticated with Azure.
-==================================================
 STEP 1: Managing Azure Context with Random Capabilities
-==================================================
 DEBUG: Fetching existing context: Mehoopany-Context
 DEBUG: Generated single random capability: sdkexamples-soap-1182
-============================================================
 CAPABILITY MERGE PROCESS
-============================================================
 
 DEBUG: PROCESSING NEW CAPABILITIES...
   ADDED NEW[0]: sdkexamples-soap-1182
@@ -83,7 +73,6 @@ DEBUG: MERGE RESULTS VALIDATION
   Final merged count: 369
   Unique names count: 369
 VALIDATION PASSED - Proceeding with 369 capabilities
-============================================================
 Capabilities saved to context-capabilities.json
 Creating/updating context: Mehoopany-Context
 Context management completed successfully: Mehoopany-Context
@@ -100,10 +89,7 @@ DEBUG: This capability will be used consistently across:
 FINAL CAPABILITY SELECTION: sdkexamples-soap-1182
 Verifying capability exists in context...
 Capability sdkexamples-soap-1182 verified in context
-============================================================
-==================================================
 STEP 2: Creating Azure Resources
-==================================================
 Creating schema in resource group: sdkexamples
 Schema created successfully: sdkexamples-schema-v2.12.13
 Creating schema version for schema: sdkexamples-schema-v2.12.13
@@ -117,9 +103,7 @@ Successfully extracted solution template version ID: 7a8e5772-899c-4128-b3a5-80e
 Creating target in resource group: sdkexamples
 Target provisioning completed successfully. Final provisioning state: Succeeded
 Target created successfully: sdkbox-mk799jyjsdd
-==================================================
 STEP 3: Setting Configuration Values via Configuration API
-==================================================
 Calling Configuration API with:
   Config Name: sdkbox-mk799jyjsddConfig
   Solution Name: sdkexamples-solution1
@@ -146,9 +130,7 @@ Debug: Response Body:
 Configuration API call successful. Status: 200
 Configuration API call completed successfully
 
-==================================================
 STEP 3.1: Getting Configuration to verify values
-==================================================
 Making GET call to Configuration API: https://management.azure.com/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/configurations/sdkbox-mk799jyjsddConfig/DynamicConfigurations/sdkexamples-solution1/versions/version1?api-version=2024-06-01-preview
 Configuration GET API call successful. Status: 200
 Retrieved Configuration Response: {"id":"/subscriptions/973d15c6-6c57-447e-b9c6-6d79b5b784ab/resourceGroups/sdkexamples/providers/Microsoft.Edge/configurations/sdkbox-mk799jyjsddConfig/DynamicConfigurations/sdkexamples-solution1/versions/version1","name":"version1","type":"microsoft.edge/configurations/dynamicconfigurations/versions","systemData":{"createdBy":"cba491bc-48c0-44a6-a6c7-23362a7f54a9","createdByType":"Application","createdAt":"2025-09-11T03:59:03.781696Z","lastModifiedBy":"audapure@microsoft.com","lastModifiedByType":"User","lastModifiedAt":"2025-09-26T04:00:01.7664664Z"},"properties":{"values":"HealthCheckEndpoint: http://localhost:8080/health\nEnableLocalLog: true\nAgentEndpoint: http://localhost:8080/agent\nHealthCheckEnabled: true\nApplicationEndpoint: http://localhost:8080/app\nTemperatureRangeMax: 100.5\nErrorThreshold: 35.3\n","provisioningState":"Succeeded"}}
@@ -178,15 +160,11 @@ ApplicationEndpoint: http://localhost:8080/app
 TemperatureRangeMax: 100.5
 ErrorThreshold: 35.3
 
-==================================================
 STEP 4: Review Target Deployment
-==================================================
 Using solution template version ID: 7a8e5772-899c-4128-b3a5-80ec414e4b9f*4E0CAA57E1E3D1EE525B9EB955CC9EE2A9ECEB932427359A68A069F24C434EB1
 Starting review for target sdkbox-mk799jyjsdd
 Review completed for target sdkbox-mk799jyjsdd
-==================================================
 STEP 5: Publish and Install Solution
-==================================================
 The workflow has completed the following steps:
 ✓ Context management with capabilities
 ✓ Schema creation
@@ -210,7 +188,5 @@ Publish operation completed successfully
 Installing solution version on target sdkbox-mk799jyjsdd
 Install operation completed successfully
 
-==================================================
 WORKFLOW COMPLETED SUCCESSFULLY!
-==================================================
 ```
